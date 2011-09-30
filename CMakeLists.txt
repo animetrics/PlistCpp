@@ -1,0 +1,16 @@
+cmake_minimum_required (VERSION 2.6) 
+project (Plist) 
+
+#include_directories (${CMAKE_SOURCE_DIR}/include)
+include_directories (include)
+IF(APPLE)
+link_directories (${CMAKE_SOURCE_DIR}/OSX/lib)
+ELSEIF(MSVC)
+link_directories (${CMAKE_SOURCE_DIR}/Windows/lib)
+ELSE()
+link_directories (${CMAKE_SOURCE_DIR}/Linux/lib)
+ENDIF()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+
+add_executable(runTests src/runTests.cpp src/plistTests.cpp src/pugixml.cpp)
+target_link_libraries(runTests UnitTest++)
