@@ -52,7 +52,7 @@ examples.
 
 Simply copy src/Plist.hpp, src/PlistDate.hpp, src/pugixml.hpp, and
 src/pugixml.cpp to your project.  If you do not have boost::any installed on
-your system, also grab the included/boost folder which contains the minimum
+your system, also grab the include/boost folder which contains the minimum
 boost headers needed for boost::any.
 
 To compile and run the test suites (UnitTest++ library included for this):
