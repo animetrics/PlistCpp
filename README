@@ -1,0 +1,5 @@
+
+This is a Apple Property List (plist) serialization and parsing library.  It
+supports both XML and binary versions of the plist format.  The interface is a
+set of static methods which serialize stdlib containters.
+
