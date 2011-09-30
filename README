@@ -1,5 +1,68 @@
+* DESCRIPTION
 
-This is a Apple Property List (plist) serialization and parsing library.  It
-supports both XML and binary versions of the plist format.  The interface is a
-set of static methods which serialize stdlib containers.
+This is a serializaiton library for Apple Property Lists (plists).  It supports
+both XML and binary versions of the plist format.  The interface is simply a
+set of static methods which serialize/deserialize stdlib containers.  
+
+It uses boost::any as a generic type in order to support heterogenous
+containers, e.g. a dictionary is a map<string, any> and an array is a
+vector<any>.  The association between stdlib types and plist types is shown
+below
+
+plist           C++
+-----------------------------------------------------------
+string          std::string 
+integer         short, int, int32_t, int64_t
+real            double
+dictionary      std::map<std::string, boost::any>
+array           std::vector<boost::any>
+date            PlistDate (included class in PlistDate.hpp)
+data            std::vector<unsigned char>
+boolean         bool
+
+* USAGE
+
+See src/plistTests.cpp for examples of reading and writing all types to both
+XML and binary.  E.g. to read a plist from disk whose root node is a
+dictionary:
+
+		map<string, boost::any> dict; 
+		Plist::readPlist("binaryExample1.plist", dict);
+
+The plist format (binary or XML) is automatically detected so call the same
+readPlist method for XML
+
+		Plist::readPlist("XMLExample1.plist", dict);
+
+To write a plist, e.g. dictionary
+
+		map<string, boost::any> dict;
+		populateDictionary(dict);
+		Plist::writePlistXML("xmlExampleWritten.plist", dict);
+
+and for a binary plist
+
+		Plist::writePlistBinary("binaryExampleWritten.plist", dict);
+
+The other public methods allow for reading and writing from streams and byte
+arrays.  Again, see the test suite code src/plistTests.cpp for comprehensive
+examples. 
+
+* INSTALL
+
+Simply copy src/Plist.hpp, src/PlistDate.hpp, src/pugixml.hpp, and
+src/pugixml.cpp to your project.  If you do not have boost::any installed on
+your system, also grab the included/boost folder which contains the minimum
+boost headers needed for boost::any.
+
+To compile and run the test suites (UnitTest++ library included for this):
+
+cd OSX/Release
+cmake ../..
+make
+cd ../../
+sh runTests.sh
+
+(for Linux, change OSX to linux
+
 
