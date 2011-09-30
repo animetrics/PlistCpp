@@ -57,12 +57,22 @@ boost headers needed for boost::any.
 
 To compile and run the test suites (UnitTest++ library included for this):
 
+mkdir -p OSX/Release
 cd OSX/Release
 cmake ../..
 make
 cd ../../
 sh runTests.sh
 
-(for Linux, change OSX to linux
+and for Debug
+
+mkdir -p OSX/Debug
+cd OSX/Debug
+cmake -DCMAKE_BUILD_TYPE=Debug ../..
+make
+cd ../../
+sh runTests.sh
+
+(for Linux, change OSX to linux).
 
 
