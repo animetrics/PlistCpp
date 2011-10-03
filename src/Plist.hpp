@@ -66,7 +66,7 @@ class Plist
 		// Public read methods.  Plist type (binary or xml) automatically detected.
 		
 		template<typename T>
-		static void readPlist(const unsigned char* byteArray, int64_t size, T& message);
+		static void readPlist(const char* byteArray, int64_t size, T& message);
 		template<typename T>
 		static void readPlist(std::istream& stream, T& message);
 		template<typename T>
@@ -145,7 +145,7 @@ class Plist
 		static std::vector<unsigned char> doubleToBytes(double val, bool littleEndian = true);
 		template<typename IntegerType>
 			static std::vector<unsigned char> intToBytes(IntegerType val, bool littleEndian = true);
-		static std::vector<unsigned char> getRange(const unsigned char* origBytes, int64_t index, int64_t size);
+		static std::vector<unsigned char> getRange(const char* origBytes, int64_t index, int64_t size);
 		static std::vector<unsigned char> getRange(const std::vector<unsigned char>& origBytes, int64_t index, int64_t size);
 
 		// binary parsing
@@ -706,7 +706,7 @@ inline void Plist::readPlist( std::istream& stream, T& message)
 	if(size > 0)
 	{
 		stream.seekg(0, std::ifstream::beg);
-		std::vector<unsigned char> buffer(size);
+		std::vector<char> buffer(size);
 		stream.read( (char *)&buffer[0], size );
 
 		readPlist(&buffer[0], size, message);
@@ -730,7 +730,7 @@ inline void Plist::readPlist(const std::string& filename, T& message)
 
 
 template<typename T>
-inline void Plist::readPlist(const unsigned char* byteArray, int64_t size, T& message)
+inline void Plist::readPlist(const char* byteArray, int64_t size, T& message)
 {
 	using namespace std;
 	if (!byteArray || (size == 0))
@@ -1161,7 +1161,7 @@ inline std::vector<unsigned char> Plist::intToBytes(IntegerType val, bool little
 	return bytes;
 }
 
-inline std::vector<unsigned char> Plist::getRange(const unsigned char* origBytes, int64_t index, int64_t size)
+inline std::vector<unsigned char> Plist::getRange(const char* origBytes, int64_t index, int64_t size)
 {
 	std::vector<unsigned char> result(size);
 	std::copy(origBytes + index, origBytes + index + size, result.begin());
@@ -1172,7 +1172,7 @@ inline std::vector<unsigned char> Plist::getRange(const std::vector<unsigned cha
 {
 	if((index + size) > (int64_t) origBytes.size())
 		throw std::runtime_error("Out of bounds getRange");
-	return getRange(vecData(origBytes), index, size);
+	return getRange((char*) vecData(origBytes), index, size);
 }
 
 
