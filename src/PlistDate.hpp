@@ -101,6 +101,20 @@ class PlistDate
 			_time = time(NULL);
 		}
 
+		// returns -1 : first < second
+		//          0 : first = second
+		//          1 : first > second
+				
+		static int compare(const PlistDate& first, const PlistDate& second)
+		{
+			if(first.timeAsEpoch() < second.timeAsEpoch())
+				return -1;
+			else if (first.timeAsEpoch() == second.timeAsEpoch())
+				return 0;
+			else
+				return 1;
+		}
+
 		// iso 8601 date string convention
 		std::string timeAsXMLConvention() const
 		{
