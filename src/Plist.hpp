@@ -40,6 +40,10 @@
 #include "pugixml.hpp"
 #include "base64.hpp"
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <stdint.h>
+#endif
+
 struct PlistHelperData
 {
 	public:
@@ -88,6 +92,28 @@ class Plist
 		static void writePlistXML(
 				pugi::xml_document& doc,
 				const boost::any& message);
+
+		// helper functions
+
+		// msvc <= 2005 doesn't have std::vector::data() method
+
+		template<typename T>
+		static T* vecData(std::vector<T>& vec)
+		{
+			if(vec.size() > 0)
+				return &vec[0];
+			else
+				throw std::runtime_error("Plist::vecData trying to get pointer to empty std::vector");
+		}
+
+		template<typename T>
+		static const T* vecData(const std::vector<T>& vec)
+		{
+			if(vec.size() > 0)
+				return &vec[0];
+			else
+				throw std::runtime_error("Plist::vecData trying to get pointer to empty std::vector");
+		}
 
 		// xml helper functions
 
@@ -324,7 +350,7 @@ inline void Plist::writePlistBinary(
 {
 	PlistHelperData d;
 	writePlistBinary(d, message);
-	stream.write((const char*) d._objectTable.data(), d._objectTable.size());
+	stream.write((const char*) vecData(d._objectTable), d._objectTable.size());
 }
 
 inline void Plist::writePlistBinary(
@@ -550,10 +576,10 @@ inline std::vector<unsigned char> Plist::writeBinaryDouble(PlistHelperData& d, d
 {
 	using namespace std;
 	vector<unsigned char> buffer = regulateNullBytes(doubleToBytes(value), 4);
-	while(buffer.size() != pow(2, log(buffer.size()) / log(2)))
+	while(buffer.size() != pow(2., log((double) buffer.size()) / log(2.)))
 		buffer.push_back(0);
 
-	unsigned char header = 0x20 | (int)(log(buffer.size()) / log(2));
+	unsigned char header = 0x20 | (int)(log((double) buffer.size()) / log(2.));
 	buffer.push_back(header);
 	reverse(buffer.begin(), buffer.end());
 
@@ -600,10 +626,10 @@ inline std::vector<unsigned char> Plist::writeBinaryInteger(PlistHelperData& d, 
 	
 	vector<unsigned char> buffer = intToBytes<int64_t>(value);
 	buffer = regulateNullBytes(intToBytes<int64_t>(value), 1);
-	while(buffer.size() != pow(2, log(buffer.size()) / log(2)))
+	while(buffer.size() != pow(2., log((double) buffer.size()) / log(2.)))
 		buffer.push_back(0);
 
-	unsigned char header = 0x10 | (int)(log(buffer.size()) / log(2));
+	unsigned char header = 0x10 | (int)(log((double) buffer.size()) / log(2.));
 	buffer.push_back(header);
 	reverse(buffer.begin(), buffer.end());
 
@@ -847,22 +873,22 @@ inline void Plist::parseOffsetTable(PlistHelperData& d, const std::vector<unsign
 		std::reverse(temp.begin(), temp.end());
 		d._offsetTable.push_back(
 				bytesToInt<int32_t>(
-					regulateNullBytes(temp, 4).data()));
+					vecData(regulateNullBytes(temp, 4))));
 	}
 }
 
 inline void Plist::parseTrailer(PlistHelperData& d, const std::vector<unsigned char>& trailer)
 {
-	d._offsetByteSize = bytesToInt<int32_t>(regulateNullBytes(getRange(trailer, 6, 1), 4).data());
-	d._objRefSize = bytesToInt<int32_t>(regulateNullBytes(getRange(trailer, 7, 1), 4).data());
+	d._offsetByteSize = bytesToInt<int32_t>(vecData(regulateNullBytes(getRange(trailer, 6, 1), 4)));
+	d._objRefSize = bytesToInt<int32_t>(vecData(regulateNullBytes(getRange(trailer, 7, 1), 4)));
 
 	std::vector<unsigned char> refCountBytes = getRange(trailer, 12, 4);
 //	std::reverse(refCountBytes.begin(), refCountBytes.end());
-	d._refCount = bytesToInt<int32_t>(refCountBytes.data(), false); 
+	d._refCount = bytesToInt<int32_t>(vecData(refCountBytes), false); 
 	
 	std::vector<unsigned char> offsetTableOffsetBytes = getRange(trailer, 24, 8);
 //	std::reverse(offsetTableOffsetBytes.begin(), offsetTableOffsetBytes.end());
-	d._offsetTableOffset = bytesToInt<int64_t>(offsetTableOffsetBytes.data(), false);
+	d._offsetTableOffset = bytesToInt<int64_t>(vecData(offsetTableOffsetBytes), false);
 }
 
 
@@ -939,7 +965,7 @@ inline std::vector<int32_t> Plist::getRefsForContainers(const PlistHelperData& d
 	{
 		std::vector<unsigned char> refBuffer = getRange(d._objectTable, i, d._objRefSize);
 		reverse(refBuffer.begin(), refBuffer.end());
-		refs.push_back(bytesToInt<int32_t>(regulateNullBytes(refBuffer, 4).data()));
+		refs.push_back(bytesToInt<int32_t>(vecData(regulateNullBytes(refBuffer, 4))));
 	}
 
 	return refs;
@@ -994,28 +1020,28 @@ inline std::string Plist::parseBinaryString(const PlistHelperData& d, int header
 		charStartPosition = headerPosition + 2 + regulateNullBytes(intToBytes<int32_t>(charCount), 1).size();
 
 	std::vector<unsigned char> characterBytes = getRange(d._objectTable, charStartPosition, charCount);
-	std::string buffer = std::string((char*) characterBytes.data(), characterBytes.size()); 
+	std::string buffer = std::string((char*) vecData(characterBytes), characterBytes.size()); 
 	return buffer;
 }
 
 inline int32_t Plist::parseBinaryInt(const PlistHelperData& d, int headerPosition)
 {
 	unsigned char header = d._objectTable[headerPosition];
-	int byteCount = pow(2, header & 0xf);
+	int byteCount = pow(2., header & 0xf);
 	std::vector<unsigned char> buffer = getRange(d._objectTable, headerPosition + 1, byteCount);
 	reverse(buffer.begin(), buffer.end());
 
-	return bytesToInt<int32_t>(regulateNullBytes(buffer, 4).data());
+	return bytesToInt<int32_t>(vecData(regulateNullBytes(buffer, 4)));
 }
 
 inline double Plist::parseBinaryReal(const PlistHelperData& d, int headerPosition)
 {
 	unsigned char header = d._objectTable[headerPosition];
-	int byteCount = pow(2, header & 0xf);
+	int byteCount = pow(2., header & 0xf);
 	std::vector<unsigned char> buffer = getRange(d._objectTable, headerPosition + 1, byteCount);
 	reverse(buffer.begin(), buffer.end());
 
-	return bytesToDouble(regulateNullBytes(buffer, 8).data());
+	return bytesToDouble(vecData(regulateNullBytes(buffer, 8)));
 }
 
 inline bool Plist::parseBinaryBool(const PlistHelperData& d, int headerPosition)
@@ -1045,7 +1071,7 @@ inline PlistDate Plist::parseBinaryDate(const PlistHelperData& d, int headerPosi
 	PlistDate date;
 
 	// Date is stored as Apple Epoch and big endian. 
-	date.setTimeFromAppleEpoch(bytesToDouble(buffer.data(), false));
+	date.setTimeFromAppleEpoch(bytesToDouble(vecData(buffer), false));
 
 	return date;
 }
@@ -1105,7 +1131,7 @@ inline double Plist::bytesToDouble(const unsigned char* bytes, bool littleEndian
 	{
 		std::vector<unsigned char> bytesReverse(numBytes);
 		std::reverse_copy(bytes, bytes + numBytes, bytesReverse.begin());
-		memcpy( &result, bytesReverse.data(), numBytes);
+		memcpy( &result, vecData(bytesReverse), numBytes);
 	}
 	return result;
 }
@@ -1113,7 +1139,7 @@ inline double Plist::bytesToDouble(const unsigned char* bytes, bool littleEndian
 inline std::vector<unsigned char> Plist::doubleToBytes(double val, bool littleEndian)
 {
 	std::vector<unsigned char> result(sizeof(double));
-	memcpy(result.data(), &val, sizeof(double));
+	memcpy(vecData(result), &val, sizeof(double));
 	if(!littleEndian)
 		std::reverse(result.begin(), result.end());
 
@@ -1146,7 +1172,7 @@ inline std::vector<unsigned char> Plist::getRange(const std::vector<unsigned cha
 {
 	if((index + size) > (int64_t) origBytes.size())
 		throw std::runtime_error("Out of bounds getRange");
-	return getRange(origBytes.data(), index, size);
+	return getRange(vecData(origBytes), index, size);
 }
 
 

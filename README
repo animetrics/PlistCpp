@@ -50,10 +50,10 @@ examples.
 
 * INSTALL
 
-Simply copy src/Plist.hpp, src/PlistDate.hpp, src/pugixml.hpp, and
-src/pugixml.cpp to your project.  If you do not have boost::any installed on
-your system, also grab the include/boost folder which contains the minimum
-boost headers needed for boost::any.
+Simply copy src/Plist.hpp, src/PlistDate.hpp, src/pugixml.hpp,
+src/pugiconfig.hpp, src/base64.hpp and src/pugixml.cpp to your project.  If you
+do not have boost::any installed on your system, also grab the include/boost
+folder which contains the minimum boost headers needed for boost::any.
 
 To compile and run the test suites (UnitTest++ library included for this):
 
