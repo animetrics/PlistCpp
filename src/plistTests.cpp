@@ -170,15 +170,15 @@ SUITE(PLIST_TESTS)
 	}
 
 	// currently broken
-//	TEST(READ_BINARY)
-//	{
-//		map<string, boost::any> dict; 
-//		Plist::readPlist("binaryExample1.plist", dict);
-//
-//		cout<<"READ_BINARY test"<<endl<<endl;
-//		checkDictionary(dict);
-//		cout<<"READ_BINARY test done"<<endl<<endl;
-//	}
+	TEST(READ_BINARY)
+	{
+		map<string, boost::any> dict; 
+		Plist::readPlist("binaryExample1.plist", dict);
+
+		cout<<"READ_BINARY test"<<endl<<endl;
+		checkDictionary(dict);
+		cout<<"READ_BINARY test done"<<endl<<endl;
+	}
 
 	TEST(WRITE_BINARY)
 	{

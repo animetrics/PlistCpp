@@ -66,6 +66,8 @@ class PlistDate
 
 				tmTime.tm_isdst = 0;
 				_time = mktime(&tmTime);
+				if(_time < -1)
+					throw std::runtime_error("PlistDate::set() date invalid");
 
 //				realgm = 3;
 //				reallocal = 1;
@@ -93,7 +95,11 @@ class PlistDate
 				_time += diff;
 			}
 			else
+			{
 				_time = mktime(&tmTime);
+				if(_time < -1)
+					throw std::runtime_error("PlistDate::set() date invalid");
+			}
 		}
 
 		void setToCurrentTime()
