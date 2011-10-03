@@ -208,8 +208,8 @@ SUITE(PLIST_TESTS)
 		PlistDate dateLess(date);
 		dateLess.setTimeFromAppleEpoch(objectTime - 1);
 
-		cout<<"dateGreater.timeAsEpoch() "<<dateGreater.timeAsEpoch()<<endl;
-		cout<<"dateLess.timeAsEpoch() "<<dateLess.timeAsEpoch()<<endl;
+//		cout<<"dateGreater.timeAsEpoch() "<<dateGreater.timeAsEpoch()<<endl;
+//		cout<<"dateLess.timeAsEpoch() "<<dateLess.timeAsEpoch()<<endl;
 
 		CHECK_EQUAL(1, PlistDate::compare(dateGreater, dateLess));
 		CHECK_EQUAL(-1, PlistDate::compare(dateLess, dateGreater));
