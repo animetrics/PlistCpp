@@ -101,6 +101,11 @@ class PlistDate
 			_time = time(NULL);
 		}
 
+		time_t secondsSinceDate(const PlistDate& startDate) const
+		{
+			return _time - startDate.timeAsEpoch();
+		}
+
 		// returns -1 : first < second
 		//          0 : first = second
 		//          1 : first > second
@@ -113,6 +118,30 @@ class PlistDate
 				return 0;
 			else
 				return 1;
+		}
+
+		bool operator > (const PlistDate& rhs) const
+		{
+			if(compare(*this, rhs) == 1)
+				return true;
+			else
+				return false;
+		}
+
+		bool operator < (const PlistDate& rhs) const
+		{
+			if(compare(*this, rhs) == -1)
+				return true;
+			else
+				return false;
+		}
+
+		bool operator == (const PlistDate& rhs) const
+		{
+			if(compare(*this, rhs) == 0)
+				return true;
+			else
+				return false;
 		}
 
 		// iso 8601 date string convention
