@@ -17,7 +17,7 @@ real            double
 dictionary      std::map<std::string, boost::any>
 array           std::vector<boost::any>
 date            PlistDate (included class in PlistDate.hpp)
-data            std::vector<unsigned char>
+data            std::vector<char>
 boolean         bool
 
 * USAGE
