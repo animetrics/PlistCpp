@@ -6,25 +6,19 @@
 
 using namespace std;
 
-static void createMessage(map<string, boost::any>& message)
+static void createMessage(map<string, boost::any>& dict)
 {
-
-//		vector<boost::any> array(1);
-//		array[0] = 34;
-//		array[1] = string("string item in array");
-//		message["testArray"] = array;
-		//message["testString"] = string("hello there");
-		
 		PlistDate date;
 		date.setTimeFromAppleEpoch(338610664);
 
-		message["testDate"] = date;
-		message["testInt32"] = int32_t(-3455);
-		message["testInt64"] = int64_t(-3455);
-		message["testShort"] = short(-3455);
-		message["testDouble"] = 1.34223;
-		message["testBoolTrue"] = true;
-		message["testBoolFalse"] = false;
+		dict["testDate"] = date;
+		dict["testInt"] = int(-3455);
+		dict["testInt32"] = int32_t(-3455);
+		dict["testInt64"] = int64_t(-3455);
+		dict["testShort"] = short(-3455);
+		dict["testDouble"] = 1.34223;
+		dict["testBoolTrue"] = true;
+		dict["testBoolFalse"] = false;
 		std::ifstream stream("testImage.jpg", std::ios::binary);
 		if(!stream)
 			throw std::runtime_error("Can't open file: testImage.jpg");
@@ -32,7 +26,7 @@ static void createMessage(map<string, boost::any>& message)
 		int start = stream.tellg();
 		stream.seekg(0, std::ifstream::end);
 		int size = ((int) stream.tellg()) - start;
-		std::vector<unsigned char> actualData(size);
+		std::vector<char> actualData(size);
 		if(size > 0)
 		{
 			stream.seekg(0, std::ifstream::beg);
@@ -43,24 +37,36 @@ static void createMessage(map<string, boost::any>& message)
 			throw std::runtime_error("Can't read zero length data");
 		}
 
-		message["testImage"] = actualData;
+		dict["testImage"] = actualData;
 		vector<boost::any> array(2);
 		array[0] = 34;
 		array[1] = string("string item in array");
-		message["testArray"] = array;
-		message["testString"] = string("hello there");
-		
+		dict["testArray"] = array;
+		dict["testString"] = string("hello there");
+
+		map<string, boost::any> innerDict;
+		innerDict["test string"] = string("inner dict item");
+		dict["testDict"] = innerDict;
+
+		innerDict.clear();
+		array.resize(17);
+
+		for(int i = 0; i < 17; ++i)
+		{
+			stringstream ss;
+			if(i < 10)
+				ss<<"0";
+			ss<<i;
+			array[i] = i;
+			innerDict[ss.str()] = i;
+		}
+		dict["testArrayLarge"] = array;
+		dict["testDictLarge"] = innerDict;
 
 }
 
 static void checkDictionary(const map<string, boost::any>& dict)
 {
-//	for(map<string, boost::any>::const_iterator it = dict.begin();
-//			it != dict.end();
-//			++it)
-//	{
-//		cout<<"key: "<<it->first<<" value type: "<<(it->second).type().name()<<endl;
-//	}
 		string actualString = "hello there";
 		double actualDouble = 1.34223;
 		int actualInt = -3455;
@@ -73,7 +79,7 @@ static void checkDictionary(const map<string, boost::any>& dict)
 		int start = stream.tellg();
 		stream.seekg(0, std::ifstream::end);
 		int size = ((int) stream.tellg()) - start;
-		std::vector<unsigned char> actualData(size);
+		std::vector<char> actualData(size);
 		if(size > 0)
 		{
 			stream.seekg(0, std::ifstream::beg);
@@ -84,13 +90,13 @@ static void checkDictionary(const map<string, boost::any>& dict)
 			throw std::runtime_error("Can't read zero length data");
 		}
 
-		cout<<"Checking data..."<<endl<<"  length: ";
+		cout<<"   Checking data..."<<endl<<"     length: ";
 		cout.flush();
-		const vector<unsigned char>& plistData = boost::any_cast<const vector<unsigned char>& >(dict.find("testImage")->second);
+		const vector<char>& plistData = boost::any_cast<const vector<char>& >(dict.find("testImage")->second);
 
 		// length
 		CHECK_EQUAL(actualData.size(), plistData.size());
-		cout<<"done."<<endl<<"  Data values: ";
+		cout<<"done."<<endl<<"     Data values: ";
 
 		// data
 		CHECK_ARRAY_EQUAL(actualData.data(), plistData.data(), actualData.size());
@@ -98,25 +104,25 @@ static void checkDictionary(const map<string, boost::any>& dict)
 
 		// checking double
 
-		cout<<"Checking double... ";
+		cout<<"   Checking double... ";
 		cout.flush();
 		CHECK_CLOSE(actualDouble,boost::any_cast<const double&>(dict.find("testDouble")->second), 1E-5); 
 		cout<<"done."<<endl;
 
 		// checking int
-		cout<<"Checking int... ";
+		cout<<"   Checking int... ";
 		cout.flush();
 		CHECK_EQUAL(actualInt, boost::any_cast<const int&>(dict.find("testInt")->second));
 		cout<<"done."<<endl;
 
 		// checking string
-		cout<<"Checking string... ";
+		cout<<"   Checking string... ";
 		cout.flush();
 		CHECK_ARRAY_EQUAL(actualString.c_str(),  boost::any_cast<const string&>(dict.find("testString")->second).c_str(), actualString.size());
 		cout<<"done."<<endl;
 
 		// checking array
-		cout<<"Checking array... ";
+		cout<<"   Checking array... ";
 		cout.flush();
 		const vector<boost::any>& plistArray = boost::any_cast<const vector<boost::any>& >(dict.find("testArray")->second);
 		int actualArrayItem0 = 34;
@@ -125,9 +131,34 @@ static void checkDictionary(const map<string, boost::any>& dict)
 		CHECK_ARRAY_EQUAL(actualArrayItem1.c_str(), boost::any_cast<const string&>(plistArray[1]).c_str(), actualArrayItem1.size());
 		cout<<"done."<<endl;
 
+		// checking long array (need to do this because there is different logic if
+		// the length of the array is >= 15 elements
+		
+		cout<<"   Checking long array... ";
+		cout.flush();
+		const vector<boost::any>& plistArrayLarge = boost::any_cast<const vector<boost::any>& >(dict.find("testArrayLarge")->second);
+		int i = 0;
+		for(vector<boost::any>::const_iterator it = plistArrayLarge.begin(); 
+				i < 17;
+				++it, ++i)
+			CHECK_EQUAL(i, boost::any_cast<const int&>(*it));
+		cout<<"done."<<endl;
+
+		// checking long dict (need to do this because there is different logic if the length
+		// of the dict is >= 15 elements
+		
+		cout<<"   Checking long dict... ";
+		const map<string, boost::any>& plistDictLarge = boost::any_cast<const map<string, boost::any>& >(dict.find("testDictLarge")->second);
+		i = 0;
+		for(map<string, boost::any>::const_iterator it = plistDictLarge.begin();
+				i < 17;
+				++it, ++i)
+			CHECK_EQUAL(i, boost::any_cast<const int&>(it->second));
+		cout<<"done."<<endl;
+
 		// checking date
 
-		cout<<"Checking date... ";
+		cout<<"   Checking date... ";
 		cout.flush();
 		int actualDate = 338610664;
 		CHECK_EQUAL((int) actualDate, (int) boost::any_cast<const PlistDate&>(dict.find("testDate")->second).timeAsAppleEpoch());
@@ -137,7 +168,7 @@ static void checkDictionary(const map<string, boost::any>& dict)
 
 		// checking bools
 
-		cout<<"Checking bools... ";
+		cout<<"   Checking bools... ";
 		cout.flush();
 		bool actualTrue = true;
 		bool actualFalse = false;
@@ -158,9 +189,6 @@ SUITE(PLIST_TESTS)
 
 	TEST(READ_XML)
 	{
-//		boost::any plist;
-//		Plist::readPlist("XMLExample1.plist", plist);
-//		map<string, boost::any>& dict = boost::any_cast<map<string, boost::any>& >(plist);
 		map<string, boost::any> dict; 
 		Plist::readPlist("XMLExample1.plist", dict);
 
@@ -169,7 +197,6 @@ SUITE(PLIST_TESTS)
 		cout<<endl<<"READ_XML test done"<<endl<<endl;
 	}
 
-	// currently broken
 	TEST(READ_BINARY)
 	{
 		map<string, boost::any> dict; 
@@ -177,22 +204,57 @@ SUITE(PLIST_TESTS)
 
 		cout<<"READ_BINARY test"<<endl<<endl;
 		checkDictionary(dict);
-		cout<<"READ_BINARY test done"<<endl<<endl;
+		cout<<endl<<"READ_BINARY test done"<<endl<<endl;
 	}
 
 	TEST(WRITE_BINARY)
 	{
-		map<string, boost::any> message;
-		createMessage(message);
-		Plist::writePlistBinary("binaryExampleWritten.plist", message);
+		map<string, boost::any> dict;
+		createMessage(dict);
+		cout<<"WRITE_BINARY test"<<endl<<endl;
+		Plist::writePlistBinary("binaryExampleWritten.plist", dict);
+		dict.clear();
+		Plist::readPlist("binaryExampleWritten.plist", dict);
+		checkDictionary(dict);
+		cout<<endl<<"WRITE_BINARY test done"<<endl<<endl;
 	}
 
 	TEST(WRITE_XML)
 	{
-		map<string, boost::any> message;
-		createMessage(message);
-		Plist::writePlistXML("xmlExampleWritten.plist", message);
-		//Plist::writePlistXML("xmlExampleWritten.plist", message["testString"]);
+		map<string, boost::any> dict;
+		createMessage(dict);
+		cout<<"WRITE_XML test"<<endl<<endl;
+		Plist::writePlistXML("xmlExampleWritten.plist", dict);
+		dict.clear();
+		Plist::readPlist("xmlExampleWritten.plist", dict);
+		checkDictionary(dict);
+		cout<<endl<<"WRITE_XML test done"<<endl<<endl;
+	}
+
+	TEST(WRITE_BINARY_TO_BYTE_ARRAY)
+	{
+		cout<<"WRITE_BINARY_TO_BYTE_ARRAY test"<<endl<<endl;
+		vector<char> data;
+		map<string, boost::any> dict;
+		createMessage(dict);
+		Plist::writePlistBinary(data, dict);
+		map<string, boost::any> dictCheck;
+		Plist::readPlist(&data[0], data.size(), dictCheck);
+		checkDictionary(dictCheck);
+		cout<<endl<<"WRITE_BINARY_TO_BYTE_ARRAY test done"<<endl<<endl;
+	}
+
+	TEST(WRITE_XML_TO_BYTE_ARRAY)
+	{
+		cout<<"WRITE_XML_TO_BYTE_ARRAY test"<<endl<<endl;
+		string data;
+		map<string, boost::any> dict;
+		createMessage(dict);
+		Plist::writePlistXML(data, dict);
+		map<string, boost::any> dictCheck;
+		Plist::readPlist(data.c_str(), data.size(), dictCheck);
+		checkDictionary(dictCheck);
+		cout<<endl<<"WRITE_XML_TO_BYTE_ARRAY test done"<<endl<<endl;
 	}
 
 	TEST(DATE)
@@ -207,9 +269,6 @@ SUITE(PLIST_TESTS)
 		dateGreater.setTimeFromAppleEpoch(objectTime + 1);
 		PlistDate dateLess(date);
 		dateLess.setTimeFromAppleEpoch(objectTime - 1);
-
-//		cout<<"dateGreater.timeAsEpoch() "<<dateGreater.timeAsEpoch()<<endl;
-//		cout<<"dateLess.timeAsEpoch() "<<dateLess.timeAsEpoch()<<endl;
 
 		CHECK_EQUAL(1, PlistDate::compare(dateGreater, dateLess));
 		CHECK_EQUAL(-1, PlistDate::compare(dateLess, dateGreater));

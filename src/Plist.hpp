@@ -75,13 +75,13 @@ class Plist
 		// Public binary write methods.
 		
 		static void writePlistBinary(std::ostream& stream, const boost::any& message);
-		static std::vector<unsigned char> writePlistBinary(const boost::any& message);
+		static void writePlistBinary(std::vector<char>& plist, const boost::any& message);
 		static void writePlistBinary(const std::string& filename, const boost::any& message);
 
-		// Public binary read methods.
+		// Public XML write methods.
 		
 		static void writePlistXML(std::ostream& stream, const boost::any& message);
-		static std::string writePlistXML(const boost::any& message);
+		static void writePlistXML(std::string& plist, const boost::any& message);
 		static void writePlistXML(const std::string& filename, const boost::any& message);
 
 	private:
@@ -125,8 +125,8 @@ class Plist
 		// xml parsing
 		static std::map<std::string, boost::any> parseDictionary(pugi::xml_node& node);
 		static std::vector<boost::any> parseArray(pugi::xml_node& node);
-		static std::vector<unsigned char> base64Decode(const char* data);
-		static void base64Encode(std::string& dataEncoded, const std::vector<unsigned char>& data);
+		static std::vector<char> base64Decode(const char* data);
+		static void base64Encode(std::string& dataEncoded, const std::vector<char>& data);
 		static PlistDate parseDate(pugi::xml_node& node);
 		static boost::any parse(pugi::xml_node& doc);
 
@@ -145,8 +145,9 @@ class Plist
 		static std::vector<unsigned char> doubleToBytes(double val, bool littleEndian = true);
 		template<typename IntegerType>
 			static std::vector<unsigned char> intToBytes(IntegerType val, bool littleEndian = true);
-		static std::vector<unsigned char> getRange(const char* origBytes, int64_t index, int64_t size);
+		static std::vector<unsigned char> getRange(const unsigned char* origBytes, int64_t index, int64_t size);
 		static std::vector<unsigned char> getRange(const std::vector<unsigned char>& origBytes, int64_t index, int64_t size);
+		static std::vector<char> getRange(const char* origBytes, int64_t index, int64_t size);
 
 		// binary parsing
 		
@@ -159,7 +160,7 @@ class Plist
 		static PlistDate parseBinaryDate(const PlistHelperData& d, int headerPosition);
 		static bool parseBinaryBool(const PlistHelperData& d, int headerPosition);
 		static std::string parseBinaryString(const PlistHelperData& d, int objRef);
-		static std::vector<unsigned char> parseBinaryByteArray(const PlistHelperData& d, int headerPosition);
+		static std::vector<char> parseBinaryByteArray(const PlistHelperData& d, int headerPosition);
 		static inline std::vector<unsigned char> regulateNullBytes(const std::vector<unsigned char>& origBytes, unsigned int minBytes);
 		static void parseTrailer(PlistHelperData& d, const std::vector<unsigned char>& trailer);
 		static void parseOffsetTable(PlistHelperData& d, const std::vector<unsigned char>& offsetTableBytes);
@@ -172,7 +173,7 @@ class Plist
 		static int countArray(const std::vector<boost::any>& array);
 		static std::vector<unsigned char> writeBinaryDictionary(PlistHelperData& d, const std::map<std::string, boost::any>& dictionary);
 		static std::vector<unsigned char> writeBinaryArray(PlistHelperData& d, const std::vector<boost::any>& array);
-		static std::vector<unsigned char> writeBinaryByteArray(PlistHelperData& d, const std::vector<unsigned char>& byteArray);
+		static std::vector<unsigned char> writeBinaryByteArray(PlistHelperData& d, const std::vector<char>& byteArray);
 		static std::vector<unsigned char> writeBinaryInteger(PlistHelperData& d, int64_t value, bool write);
 		static std::vector<unsigned char> writeBinaryBool(PlistHelperData& d, bool value);
 		static std::vector<unsigned char> writeBinaryDate(PlistHelperData& d, const PlistDate& date);
@@ -203,7 +204,7 @@ inline void Plist::writeXMLNode(pugi::xml_node& node, const boost::any& obj)
 	static boost::any aShort = short(0);
 	static boost::any anArray = vector<boost::any>();
 	static boost::any aMap = map<string, boost::any>();
-	static boost::any aByteArray = vector<unsigned char>();
+	static boost::any aByteArray = vector<char>();
 	static boost::any aPlistDate = PlistDate();
 	static boost::any aPlistBool = bool(true);
 
@@ -222,7 +223,7 @@ inline void Plist::writeXMLNode(pugi::xml_node& node, const boost::any& obj)
 	else if(obj.type() == aByteArray.type())
 	{
 		string dataEncoded;
-		base64Encode(dataEncoded, boost::any_cast<const vector<unsigned char>& >(obj));
+		base64Encode(dataEncoded, boost::any_cast<const vector<char>& >(obj));
 		writeXMLSimpleNode<string>(node, "data", dataEncoded); 
 	}
 	else if(obj.type() == aDouble.type())
@@ -237,8 +238,8 @@ inline void Plist::writeXMLNode(pugi::xml_node& node, const boost::any& obj)
 		else
 			node.append_child("false");
 	}
-//	else
-//		throw runtime_error((string("Plist Error: Can't serialize type ") + obj.type().name()).c_str());
+	else
+		throw runtime_error((string("Plist Error: Can't serialize type ") + obj.type().name()).c_str());
 
 }
 
@@ -337,11 +338,12 @@ inline void Plist::writePlistBinary(
 	d._objectTable.insert(d._objectTable.end(), temp.rbegin(), temp.rend());
 }
 
-inline std::vector<unsigned char> Plist::writePlistBinary(const boost::any& message)
+inline void Plist::writePlistBinary(std::vector<char>& plist, const boost::any& message)
 {
 	PlistHelperData d;
 	writePlistBinary(d, message);
-	return d._objectTable;
+	plist.resize(d._objectTable.size());
+	std::copy((const char*) vecData(d._objectTable), (const char*) vecData(d._objectTable) + d._objectTable.size(), plist.begin());
 }
 
 inline void Plist::writePlistBinary(
@@ -362,12 +364,11 @@ inline void Plist::writePlistBinary(
   stream.close();
 }
 
-inline std::string Plist::writePlistXML(
-		const boost::any& message)
+inline void Plist::writePlistXML(std::string& plist, const boost::any& message)
 {
 	std::stringstream ss;
 	writePlistXML(ss, message);
-	return ss.str();
+	plist = ss.str();
 }
 
 inline void Plist::writePlistXML(
@@ -419,7 +420,7 @@ inline std::vector<unsigned char> Plist::writeBinary(PlistHelperData& d, const b
 	static boost::any aShort = short(0);
 	static boost::any anArray = vector<boost::any>();
 	static boost::any aMap = map<string, boost::any>();
-	static boost::any aByteArray = vector<unsigned char>();
+	static boost::any aByteArray = vector<char>();
 	static boost::any aPlistDate = PlistDate();
 	static boost::any aPlistBool = bool(true);
 
@@ -437,7 +438,7 @@ inline std::vector<unsigned char> Plist::writeBinary(PlistHelperData& d, const b
 	else if(obj.type() == anArray.type())
 		value = writeBinaryArray(d, boost::any_cast<const vector<boost::any>& >(obj));
 	else if(obj.type() == aByteArray.type())
-		value = writeBinaryByteArray(d, boost::any_cast<const vector<unsigned char>& >(obj));
+		value = writeBinaryByteArray(d, boost::any_cast<const vector<char>& >(obj));
 	else if(obj.type() == aDouble.type())
 		value = writeBinaryDouble(d, boost::any_cast<const double&>(obj));
 	else if(obj.type() == aPlistDate.type())
@@ -450,7 +451,7 @@ inline std::vector<unsigned char> Plist::writeBinary(PlistHelperData& d, const b
 	return value;
 }
 
-inline std::vector<unsigned char> Plist::writeBinaryByteArray(PlistHelperData& d, const std::vector<unsigned char>& byteArray)
+inline std::vector<unsigned char> Plist::writeBinaryByteArray(PlistHelperData& d, const std::vector<char>& byteArray)
 {
 	using namespace std;
 	vector<unsigned char> header;
@@ -464,7 +465,7 @@ inline std::vector<unsigned char> Plist::writeBinaryByteArray(PlistHelperData& d
 	}
 
 	vector<unsigned char> buffer(header);
-	buffer.insert(buffer.end(), byteArray.begin(), byteArray.end());
+	buffer.insert(buffer.end(), (unsigned char*) vecData(byteArray), (unsigned char*) vecData(byteArray) + byteArray.size());
 	d._objectTable.insert(d._objectTable.begin(), buffer.begin(), buffer.end());
 
 	return buffer;
@@ -730,9 +731,10 @@ inline void Plist::readPlist(const std::string& filename, T& message)
 
 
 template<typename T>
-inline void Plist::readPlist(const char* byteArray, int64_t size, T& message)
+inline void Plist::readPlist(const char* byteArrayTemp, int64_t size, T& message)
 {
 	using namespace std;
+	const unsigned char* byteArray = (const unsigned char*) byteArrayTemp;
 	if (!byteArray || (size == 0))
 		throw std::runtime_error("Plist: Empty plist data");
 
@@ -809,12 +811,12 @@ inline PlistDate Plist::parseDate(pugi::xml_node& node)
 	return date;
 }
 
-inline std::vector<unsigned char> Plist::base64Decode(const char* encodedData)
+inline std::vector<char> Plist::base64Decode(const char* encodedData)
 {
 	using namespace std;
 
-	vector<unsigned char> data;
-	insert_iterator<vector<unsigned char> > ii(data, data.begin());
+	vector<char> data;
+	insert_iterator<vector<char> > ii(data, data.begin());
 	base64<char> b64;
 	int state = 0;
 	b64.get(encodedData, encodedData + strlen(encodedData), ii, state); 
@@ -822,7 +824,7 @@ inline std::vector<unsigned char> Plist::base64Decode(const char* encodedData)
 	return data;
 }
 
-inline void Plist::base64Encode(std::string& dataEncoded, const std::vector<unsigned char>& data)
+inline void Plist::base64Encode(std::string& dataEncoded, const std::vector<char>& data)
 {
 	using namespace std;
 	dataEncoded.clear();
@@ -961,7 +963,10 @@ inline std::vector<int32_t> Plist::getRefsForContainers(const PlistHelperData& d
 
 
 	vector<int32_t> refs;
-	for (int i = refStartPosition; i < refStartPosition + refCount * 2 * d._objRefSize; i += d._objRefSize)
+	int mult = 1;
+	if((((unsigned char) d._objectTable[d._offsetTable[objRef]]) & 0xF0) == 0xD0)
+		mult = 2;
+	for (int i = refStartPosition; i < refStartPosition + refCount * mult * d._objRefSize; i += d._objRefSize)
 	{
 		std::vector<unsigned char> refBuffer = getRange(d._objectTable, i, d._objRefSize);
 		reverse(refBuffer.begin(), refBuffer.end());
@@ -975,7 +980,7 @@ inline std::vector<boost::any>  Plist::parseBinaryArray(const PlistHelperData& d
 {
 	using namespace std;
 	vector<int32_t> refs = getRefsForContainers(d, objRef);
-	int32_t refCount = refs.size() / 2;
+	int32_t refCount = refs.size();
 
 	vector<boost::any> array;
 	for(int i = 0; i < refCount; ++i)
@@ -1076,7 +1081,7 @@ inline PlistDate Plist::parseBinaryDate(const PlistHelperData& d, int headerPosi
 	return date;
 }
 
-inline std::vector<unsigned char> Plist::parseBinaryByteArray(const PlistHelperData& d, int headerPosition)
+inline std::vector<char> Plist::parseBinaryByteArray(const PlistHelperData& d, int headerPosition)
 {
 	unsigned char headerByte = d._objectTable[headerPosition];
 	int32_t byteCount = getCount(d, headerPosition, headerByte);
@@ -1086,7 +1091,7 @@ inline std::vector<unsigned char> Plist::parseBinaryByteArray(const PlistHelperD
 	else
 		byteStartPosition = headerPosition + 2 + regulateNullBytes(intToBytes<int32_t>(byteCount), 1).size();
 
-	return getRange(d._objectTable, byteStartPosition, byteCount);
+	return getRange((const char*) vecData(d._objectTable), byteStartPosition, byteCount);
 }
 
 inline int32_t Plist::getCount(const PlistHelperData& d, int bytePosition, unsigned char headerByte)
@@ -1161,9 +1166,16 @@ inline std::vector<unsigned char> Plist::intToBytes(IntegerType val, bool little
 	return bytes;
 }
 
-inline std::vector<unsigned char> Plist::getRange(const char* origBytes, int64_t index, int64_t size)
+inline std::vector<unsigned char> Plist::getRange(const unsigned char* origBytes, int64_t index, int64_t size)
 {
 	std::vector<unsigned char> result(size);
+	std::copy(origBytes + index, origBytes + index + size, result.begin());
+	return result;
+}
+
+inline std::vector<char> Plist::getRange(const char* origBytes, int64_t index, int64_t size)
+{
+	std::vector<char> result(size);
 	std::copy(origBytes + index, origBytes + index + size, result.begin());
 	return result;
 }
@@ -1172,7 +1184,7 @@ inline std::vector<unsigned char> Plist::getRange(const std::vector<unsigned cha
 {
 	if((index + size) > (int64_t) origBytes.size())
 		throw std::runtime_error("Out of bounds getRange");
-	return getRange((char*) vecData(origBytes), index, size);
+	return getRange(vecData(origBytes), index, size);
 }
 
 
