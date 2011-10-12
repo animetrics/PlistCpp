@@ -1,7 +1,8 @@
-if [[ $1 ]]
+echo param1 = $1
+if [[ $1 && $2 ]]
 then
 	cd testing
-	../${1}/Release/runTests
+	../${2}/${1}/runTests
 else
-	echo "runTests.sh <Platform Linux, Windows, OSX>"
+	echo "runTests.sh <config Release/Debug> <Platform Linux, OSX>"
 fi

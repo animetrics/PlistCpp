@@ -52,13 +52,13 @@ class PlistDate
 			tmTime.tm_sec = second;
 			tmTime.tm_mon = month - 1;
 			tmTime.tm_min = minute;
-			tmTime.tm_isdst = -1;
 
-			//got to get proper day light savings. 
+			//get proper day light savings. 
 
-//			time_t loc = time(NULL);
-//			struct tm tmLoc = *localtime(&loc);
-//			tmTime.tm_isdst = tmLoc.tm_isdst;
+			time_t loc = time(NULL);
+			struct tm tmLoc = *localtime(&loc);
+			//std::cout<<"tmLoc.tm_isdst = "<<tmLoc.tm_isdst<<std::endl;
+			tmTime.tm_isdst = tmLoc.tm_isdst;
 
 			if(UTC)
 			{
@@ -68,17 +68,6 @@ class PlistDate
 				_time = mktime(&tmTime);
 				if(_time < -1)
 					throw std::runtime_error("PlistDate::set() date invalid");
-
-//				realgm = 3;
-//				reallocal = 1;
-//
-//				readgm = 5;
-//				readlocal = 3;
-//
-//				diff = 3 - 5 = -2;
-//
-//				realgm = readgm + diff = 5 - 2 = 3;
-
 
 				// don't have timegm for all systems so here's a portable way to do it.
 				
@@ -163,8 +152,8 @@ class PlistDate
 #else
 			gmtime_r(&_time, &tmTime);
 #endif
-			//strftime(&result[0], 21, "%FT%TZ", &tmTime);
-			strftime(&result[0], 21, "%FT%TZ", &tmTime);
+			// %F and %T not portable so using %Y-%m-%d and %H:%M:%S instead
+			strftime(&result[0], 21, "%Y-%m-%dT%H:%M:%SZ", &tmTime);
 			return std::string(&result[0]);
 		}
 

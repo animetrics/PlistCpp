@@ -44,23 +44,24 @@
 #include <stdint.h>
 #endif
 
-struct PlistHelperData
-{
-	public:
-
-		// binary helper data
-		std::vector<int32_t> _offsetTable;
-		std::vector<unsigned char> _objectTable;
-		int32_t _offsetByteSize;
-		int64_t _offsetTableOffset;
-
-		int32_t _objRefSize;
-		int32_t _refCount;
-};
 
 
 class Plist
 {
+	struct PlistHelperData
+	{
+		public:
+
+			// binary helper data
+			std::vector<int32_t> _offsetTable;
+			std::vector<unsigned char> _objectTable;
+			int32_t _offsetByteSize;
+			int64_t _offsetTableOffset;
+
+			int32_t _objRefSize;
+			int32_t _refCount;
+	};
+
 	public:
 
 		// Public read methods.  Plist type (binary or xml) automatically detected.
@@ -1059,10 +1060,23 @@ inline bool Plist::parseBinaryBool(const PlistHelperData& d, int headerPosition)
 		value = false;
 	else if (header == 0x00)
 	{
-		// null byte, not sure yet what to do with this.  It's in the spec as a
-		// possible encounter but don't know what to do.
+		// null byte, not sure yet what to do with this.  It's in the spec but we
+		// have never encountered it. 
 
 		throw std::runtime_error("Plist: null byte encountered, unsure how to parse");
+	}
+	else if (header == 0x0F)
+	{
+		// fill byte, not sure yet what to do with this.  It's in the spec but we
+		// have never encountered it.
+
+		throw std::runtime_error("Plist: fill byte encountered, unsure how to parse");
+	}
+	else
+	{
+		std::stringstream ss;
+		ss<<"Plist: unknown header "<<header;
+		throw std::runtime_error(ss.str().c_str());
 	}
 
 	return value;
