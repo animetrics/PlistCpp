@@ -1,4 +1,6 @@
-* DESCRIPTION
+-----------------
+DESCRIPTION
+-----------------
 
 This is a serializaiton library for Apple Property Lists (plists).  It supports
 both XML and binary versions of the plist format.  The interface is simply a
@@ -10,7 +12,8 @@ vector<any>.  The association between stdlib types and plist types is shown
 below
 
 plist           C++
------------------------------------------------------------
+____________________________________________________________
+
 string          std::string 
 integer         short, int, int32_t, int64_t
 real            double
@@ -20,7 +23,9 @@ date            PlistDate (included class in PlistDate.hpp)
 data            std::vector<char>
 boolean         bool
 
-* USAGE
+-----------------
+USAGE
+-----------------
 
 See src/plistTests.cpp for examples of reading and writing all types to both
 XML and binary.  E.g. to read a plist from disk whose root node is a
@@ -48,21 +53,27 @@ The other public methods allow for reading and writing from streams and byte
 arrays.  Again, see the test suite code src/plistTests.cpp for comprehensive
 examples. 
 
-* INSTALL
+-----------------
+INSTALL
+-----------------
 
 Simply copy src/Plist.hpp, src/PlistDate.hpp, src/pugixml.hpp,
 src/pugiconfig.hpp, src/base64.hpp and src/pugixml.cpp to your project.  If you
 do not have boost::any installed on your system, also grab the include/boost
 folder which contains the minimum boost headers needed for boost::any.
 
-To compile and run the test suites (UnitTest++ library included for this):
+To compile and run the test suites (test suites will also run automatically as
+part of the post build process).  Note, the UnitTest++ library is required and
+included.
+
+OSX, Linux (for Linux, change OSX to Linux below):
 
 mkdir -p OSX/Release
 cd OSX/Release
-cmake ../..
+cmake -DCMAKE_BUILD_TYPE=Release ../..
 make
 cd ../../
-sh runTests.sh
+sh runTests.sh Release OSX 
 
 and for Debug
 
@@ -71,8 +82,11 @@ cd OSX/Debug
 cmake -DCMAKE_BUILD_TYPE=Debug ../..
 make
 cd ../../
-sh runTests.sh
+sh runTests.sh Debug OSX
 
-(for Linux, change OSX to linux).
+Windows:
 
-
+cd Windows
+cmake ..
+cd ..
+runTests.bat Release
