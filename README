@@ -90,5 +90,6 @@ Windows:
 
 cd Windows
 cmake ..
+start Plist.sln  (build solution)
 cd ..
 runTests.bat Release
