@@ -15,7 +15,8 @@ static void createMessage(map<string, boost::any>& dict)
 		dict["testInt"] = int(-3455);
 		dict["testInt32"] = int32_t(-3455);
 		dict["testInt64"] = int64_t(-3455);
-		dict["testShort"] = short(-3455);
+		dict["testShort"] = short(3455);
+		dict["testLong"] = long(-3455);
 		dict["testDouble"] = 1.34223;
 		dict["testBoolTrue"] = true;
 		dict["testBoolFalse"] = false;
@@ -49,12 +50,14 @@ static void createMessage(map<string, boost::any>& dict)
 		dict["testDict"] = innerDict;
 
 		innerDict.clear();
-		array.resize(17);
+		array.resize(256);
 
-		for(int i = 0; i < 17; ++i)
+		for(int i = 0; i < 256; ++i)
 		{
 			stringstream ss;
 			if(i < 10)
+				ss<<"00";
+			if((i >= 10) && (i < 100))
 				ss<<"0";
 			ss<<i;
 			array[i] = i;
@@ -112,7 +115,7 @@ static void checkDictionary(const map<string, boost::any>& dict)
 		// checking int
 		cout<<"   Checking int... ";
 		cout.flush();
-		CHECK_EQUAL(actualInt, boost::any_cast<const int&>(dict.find("testInt")->second));
+		CHECK_EQUAL(actualInt, boost::any_cast<const int64_t&>(dict.find("testInt")->second));
 		cout<<"done."<<endl;
 
 		// checking string
@@ -127,7 +130,7 @@ static void checkDictionary(const map<string, boost::any>& dict)
 		const vector<boost::any>& plistArray = boost::any_cast<const vector<boost::any>& >(dict.find("testArray")->second);
 		int actualArrayItem0 = 34;
 		string actualArrayItem1 = "string item in array";
-		CHECK_EQUAL(actualArrayItem0, boost::any_cast<const int&>(plistArray[0]));
+		CHECK_EQUAL(actualArrayItem0, boost::any_cast<const int64_t&>(plistArray[0]));
 		CHECK_ARRAY_EQUAL(actualArrayItem1.c_str(), boost::any_cast<const string&>(plistArray[1]).c_str(), actualArrayItem1.size());
 		cout<<"done."<<endl;
 
@@ -139,9 +142,9 @@ static void checkDictionary(const map<string, boost::any>& dict)
 		const vector<boost::any>& plistArrayLarge = boost::any_cast<const vector<boost::any>& >(dict.find("testArrayLarge")->second);
 		int i = 0;
 		for(vector<boost::any>::const_iterator it = plistArrayLarge.begin(); 
-				i < 17;
+				i < 256;
 				++it, ++i)
-			CHECK_EQUAL(i, boost::any_cast<const int&>(*it));
+			CHECK_EQUAL(i, boost::any_cast<const int64_t&>(*it));
 		cout<<"done."<<endl;
 
 		// checking long dict (need to do this because there is different logic if the length
@@ -151,9 +154,9 @@ static void checkDictionary(const map<string, boost::any>& dict)
 		const map<string, boost::any>& plistDictLarge = boost::any_cast<const map<string, boost::any>& >(dict.find("testDictLarge")->second);
 		i = 0;
 		for(map<string, boost::any>::const_iterator it = plistDictLarge.begin();
-				i < 17;
+				i < 256;
 				++it, ++i)
-			CHECK_EQUAL(i, boost::any_cast<const int&>(it->second));
+			CHECK_EQUAL(i, boost::any_cast<const int64_t&>(it->second));
 		cout<<"done."<<endl;
 
 		// checking date

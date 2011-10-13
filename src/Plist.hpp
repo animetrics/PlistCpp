@@ -156,7 +156,7 @@ class Plist
 		static std::map<std::string, boost::any>  parseBinaryDictionary(const PlistHelperData& d, int objRef);
 		static std::vector<boost::any>  parseBinaryArray(const PlistHelperData& d, int objRef);
 		static std::vector<int32_t> getRefsForContainers(const PlistHelperData& d, int objRef);
-		static int32_t parseBinaryInt(const PlistHelperData& d, int headerPosition);
+		static int64_t parseBinaryInt(const PlistHelperData& d, int headerPosition);
 		static double parseBinaryReal(const PlistHelperData& d, int headerPosition);
 		static PlistDate parseBinaryDate(const PlistHelperData& d, int headerPosition);
 		static bool parseBinaryBool(const PlistHelperData& d, int headerPosition);
@@ -202,6 +202,7 @@ inline void Plist::writeXMLNode(pugi::xml_node& node, const boost::any& obj)
 	static boost::any aDouble = double(0);
 	static boost::any anInt32 = int32_t(0);
 	static boost::any anInt64 = int64_t(0);
+	static boost::any aLong = long(0);
 	static boost::any aShort = short(0);
 	static boost::any anArray = vector<boost::any>();
 	static boost::any aMap = map<string, boost::any>();
@@ -213,6 +214,8 @@ inline void Plist::writeXMLNode(pugi::xml_node& node, const boost::any& obj)
 		writeXMLSimpleNode<int32_t>(node, "integer", obj);
 	else if(obj.type() == anInt64.type())
 		writeXMLSimpleNode<int64_t>(node, "integer", obj);
+	else if(obj.type() == aLong.type())
+		writeXMLSimpleNode<long>(node, "integer", obj);
 	else if(obj.type() == aShort.type())
 		writeXMLSimpleNode<short>(node, "integer", obj);
 	else if(obj.type() == aMap.type())
@@ -418,6 +421,7 @@ inline std::vector<unsigned char> Plist::writeBinary(PlistHelperData& d, const b
 	static boost::any aDouble = double(0);
 	static boost::any anInt32 = int32_t(0);
 	static boost::any anInt64 = int64_t(0);
+	static boost::any aLong = long(0);
 	static boost::any aShort = short(0);
 	static boost::any anArray = vector<boost::any>();
 	static boost::any aMap = map<string, boost::any>();
@@ -430,6 +434,8 @@ inline std::vector<unsigned char> Plist::writeBinary(PlistHelperData& d, const b
 		value = writeBinaryInteger(d, boost::any_cast<const int32_t&>(obj), true);
 	else if(obj.type() == anInt64.type())
 		value = writeBinaryInteger(d, boost::any_cast<const int64_t&>(obj), true);
+	else if(obj.type() == aLong.type())
+		value = writeBinaryInteger(d, boost::any_cast<const long&>(obj), true);
 	else if(obj.type() == aShort.type())
 		value = writeBinaryInteger(d, boost::any_cast<const short&>(obj), true);
 	else if(obj.type() == aMap.type())
@@ -851,7 +857,7 @@ inline boost::any Plist::parse(pugi::xml_node& node)
 	else if("string" == nodeName)
 		result = string(node.first_child().value());
 	else if("integer" == nodeName)
-		result = atoi(node.first_child().value());
+		result = (int64_t) atoi(node.first_child().value());
 	else if("real" == nodeName)
 		result = atof(node.first_child().value());
 	else if("false" == nodeName)
@@ -1030,14 +1036,14 @@ inline std::string Plist::parseBinaryString(const PlistHelperData& d, int header
 	return buffer;
 }
 
-inline int32_t Plist::parseBinaryInt(const PlistHelperData& d, int headerPosition)
+inline int64_t Plist::parseBinaryInt(const PlistHelperData& d, int headerPosition)
 {
 	unsigned char header = d._objectTable[headerPosition];
 	int byteCount = pow(2., header & 0xf);
 	std::vector<unsigned char> buffer = getRange(d._objectTable, headerPosition + 1, byteCount);
 	reverse(buffer.begin(), buffer.end());
 
-	return bytesToInt<int32_t>(vecData(regulateNullBytes(buffer, 4)));
+	return bytesToInt<int64_t>(vecData(regulateNullBytes(buffer, 4)));
 }
 
 inline double Plist::parseBinaryReal(const PlistHelperData& d, int headerPosition)

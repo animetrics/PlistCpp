@@ -2,20 +2,22 @@
 DESCRIPTION
 -----------------
 
-This is a serializaiton library for Apple Property Lists (plists).  It supports
-both XML and binary versions of the plist format.  The interface is simply a
-set of static methods which serialize/deserialize stdlib containers.  
+This is a C++ Property List (plist) serialization library with an MIT license.
+It supports both XML and binary versions of the plist format.  The interface is
+simply a set of static methods which serialize a subset of stdlib containers to
+plists (as well as the inverse operation of  deserializing plists into stdlib
+containers).
 
 It uses boost::any as a generic type in order to support heterogenous
 containers, e.g. a dictionary is a map<string, any> and an array is a
-vector<any>.  The association between stdlib types and plist types is shown
-below
+vector<any>.  The supported stdlib containers and their association to plist
+types is shown below. 
 
 plist           C++
-____________________________________________________________
+__________________________________________________________________________________
 
 string          std::string 
-integer         short, int, int32_t, int64_t
+integer         short, int, long, int32_t, int64_t (always deserializes as int64_t)
 real            double
 dictionary      std::map<std::string, boost::any>
 array           std::vector<boost::any>

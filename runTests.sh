@@ -1,4 +1,3 @@
-echo param1 = $1
 if [[ $1 && $2 ]]
 then
 	cd testing
