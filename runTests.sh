@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [[ $1 && $2 ]]
 then
 	cd testing
