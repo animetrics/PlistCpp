@@ -48,19 +48,6 @@
 
 class Plist
 {
-	struct PlistHelperData
-	{
-		public:
-
-			// binary helper data
-			std::vector<int32_t> _offsetTable;
-			std::vector<unsigned char> _objectTable;
-			int32_t _offsetByteSize;
-			int64_t _offsetTableOffset;
-
-			int32_t _objRefSize;
-			int32_t _refCount;
-	};
 
 	public:
 
@@ -86,6 +73,21 @@ class Plist
 		static void writePlistXML(const std::string& filename, const boost::any& message);
 
 	private:
+
+		struct PlistHelperData
+		{
+			public:
+
+				// binary helper data
+				std::vector<int32_t> _offsetTable;
+				std::vector<unsigned char> _objectTable;
+				int32_t _offsetByteSize;
+				int64_t _offsetTableOffset;
+
+				int32_t _objRefSize;
+				int32_t _refCount;
+		};
+
 		static void writePlistBinary(
 				PlistHelperData& d, 
 				const boost::any& message);

@@ -2,15 +2,15 @@
 DESCRIPTION
 -----------------
 
-This is a C++ Property List (plist) serialization library with an MIT license.
-It supports both XML and binary versions of the plist format.  The interface is
-simply a set of static methods which serialize a subset of stdlib containers to
-plists (as well as the inverse operation of  deserializing plists into stdlib
-containers).
+This is a C++ Property List (plist) serialization library (MIT license).
+It supports both XML and binary versions of the plist format and is designed to
+be cross platform with minimal dependencies.  The interface is simply a set of
+static methods which serialize a subset of stdlib containers to plists (as well
+as the inverse operation of deserializing plists into stdlib containers).
 
 It uses boost::any as a generic type in order to support heterogenous
 containers, e.g. a dictionary is a map<string, any> and an array is a
-vector<any>.  The supported stdlib containers and their association to plist
+vector<any>.  The supported stdlib containers and their associations to plist
 types is shown below. 
 
 plist           C++
