@@ -250,12 +250,12 @@ SUITE(PLIST_TESTS)
 	TEST(WRITE_XML_TO_BYTE_ARRAY)
 	{
 		cout<<"WRITE_XML_TO_BYTE_ARRAY test"<<endl<<endl;
-		string data;
+		vector<char> data;
 		map<string, boost::any> dict;
 		createMessage(dict);
 		Plist::writePlistXML(data, dict);
 		map<string, boost::any> dictCheck;
-		Plist::readPlist(data.c_str(), data.size(), dictCheck);
+		Plist::readPlist(&data[0], data.size(), dictCheck);
 		checkDictionary(dictCheck);
 		cout<<endl<<"WRITE_XML_TO_BYTE_ARRAY test done"<<endl<<endl;
 	}

@@ -69,7 +69,7 @@ class Plist
 		// Public XML write methods.
 		
 		static void writePlistXML(std::ostream& stream, const boost::any& message);
-		static void writePlistXML(std::string& plist, const boost::any& message);
+		static void writePlistXML(std::vector<char>& plist, const boost::any& message);
 		static void writePlistXML(const std::string& filename, const boost::any& message);
 
 	private:
@@ -370,11 +370,15 @@ inline void Plist::writePlistBinary(
   stream.close();
 }
 
-inline void Plist::writePlistXML(std::string& plist, const boost::any& message)
+inline void Plist::writePlistXML(std::vector<char>& plist, const boost::any& message)
 {
 	std::stringstream ss;
 	writePlistXML(ss, message);
-	plist = ss.str();
+
+	std::istreambuf_iterator<char> beg(ss);
+	std::istreambuf_iterator<char> end;
+	plist.clear();
+	plist.insert(plist.begin(), beg, end);
 }
 
 inline void Plist::writePlistXML(
