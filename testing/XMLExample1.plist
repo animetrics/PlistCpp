@@ -794,6 +794,8 @@
 	</dict>
 	<key>testDouble</key>
 	<real>1.34223</real>
+	<key>testFloat</key>
+	<real>1.34223</real>
 	<key>testImage</key>
 	<data>
 	/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAgFBgcGBQgHBgcJCAgJDBMMDAsLDBgREg4T

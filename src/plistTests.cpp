@@ -18,6 +18,7 @@ static void createMessage(map<string, boost::any>& dict)
 		dict["testShort"] = short(3455);
 		dict["testLong"] = long(-3455);
 		dict["testDouble"] = 1.34223;
+		dict["testFloat"] = 1.34223f;
 		dict["testBoolTrue"] = true;
 		dict["testBoolFalse"] = false;
 		std::ifstream stream("testImage.jpg", std::ios::binary);
@@ -110,6 +111,13 @@ static void checkDictionary(const map<string, boost::any>& dict)
 		cout<<"   Checking double... ";
 		cout.flush();
 		CHECK_CLOSE(actualDouble,boost::any_cast<const double&>(dict.find("testDouble")->second), 1E-5); 
+		cout<<"done."<<endl;
+
+		// checking float 
+		
+		cout<<"   Checking float... ";
+		cout.flush();
+		CHECK_CLOSE(actualDouble,boost::any_cast<const double&>(dict.find("testFloat")->second), 1E-5); 
 		cout<<"done."<<endl;
 
 		// checking int

@@ -18,7 +18,7 @@ ________________________________________________________________________________
 
 string          std::string 
 integer         short, int, long, int32_t, int64_t (always deserializes as int64_t)
-real            double
+real            double, float (always deserializes as double)
 dictionary      std::map<std::string, boost::any>
 array           std::vector<boost::any>
 date            PlistDate (included class in PlistDate.hpp)

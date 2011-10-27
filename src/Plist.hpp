@@ -202,6 +202,7 @@ inline void Plist::writeXMLNode(pugi::xml_node& node, const boost::any& obj)
 	
 	static boost::any aString = string();
 	static boost::any aDouble = double(0);
+	static boost::any aFloat = float(0);
 	static boost::any anInt32 = int32_t(0);
 	static boost::any anInt64 = int64_t(0);
 	static boost::any aLong = long(0);
@@ -234,6 +235,8 @@ inline void Plist::writeXMLNode(pugi::xml_node& node, const boost::any& obj)
 	}
 	else if(obj.type() == aDouble.type())
 		writeXMLSimpleNode<double>(node, "real", obj);
+	else if(obj.type() == aFloat.type())
+		writeXMLSimpleNode<float>(node, "real", obj);
 	else if(obj.type() == aPlistDate.type())
 		writeXMLSimpleNode<string>(node, "date", boost::any_cast<const PlistDate&>(obj).timeAsXMLConvention());
 	else if(obj.type() == aPlistBool.type())
@@ -425,6 +428,7 @@ inline std::vector<unsigned char> Plist::writeBinary(PlistHelperData& d, const b
 	
 	static boost::any aString = string();
 	static boost::any aDouble = double(0);
+	static boost::any aFloat = float(0);
 	static boost::any anInt32 = int32_t(0);
 	static boost::any anInt64 = int64_t(0);
 	static boost::any aLong = long(0);
@@ -454,6 +458,8 @@ inline std::vector<unsigned char> Plist::writeBinary(PlistHelperData& d, const b
 		value = writeBinaryByteArray(d, boost::any_cast<const vector<char>& >(obj));
 	else if(obj.type() == aDouble.type())
 		value = writeBinaryDouble(d, boost::any_cast<const double&>(obj));
+	else if(obj.type() == aFloat.type())
+		value = writeBinaryDouble(d, boost::any_cast<const float&>(obj));
 	else if(obj.type() == aPlistDate.type())
 		value = writeBinaryDate(d, boost::any_cast<const PlistDate&>(obj));
 	else if(obj.type() == aPlistBool.type())
