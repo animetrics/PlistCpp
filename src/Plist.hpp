@@ -847,12 +847,16 @@ inline void Plist::base64Encode(std::string& dataEncoded, const std::vector<char
 {
 	using namespace std;
 	dataEncoded.clear();
-	//dataEncoded += "\n";
 	insert_iterator<string> ii(dataEncoded, dataEncoded.begin());
 	base64<char> b64;
 	int state = 0;
+
+#if defined(_WIN32) || defined(_WIN64)
 	b64.put(data.begin(), data.end(), ii, state , base64<>::crlf());
-	//dataEncoded += "\n";
+#else
+	b64.put(data.begin(), data.end(), ii, state , base64<>::lf());
+#endif
+
 }
 
 inline boost::any Plist::parse(pugi::xml_node& node)

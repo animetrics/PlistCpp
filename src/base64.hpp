@@ -51,6 +51,16 @@ public:
 	// you can fill end of line
 	// it may be crlf, crlfsp, noline or other class like it
 
+	struct lf
+	{
+		template<class _OI>
+			_OI operator()(_OI _To) const{
+			*_To = _Tr::to_char_type('\n'); ++_To;
+
+			return (_To);
+			}
+	};
+
 	struct crlf
 	{
 		template<class _OI>
