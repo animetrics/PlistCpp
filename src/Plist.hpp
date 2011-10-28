@@ -158,7 +158,7 @@ class Plist
 		static std::map<std::string, boost::any>  parseBinaryDictionary(const PlistHelperData& d, int objRef);
 		static std::vector<boost::any>  parseBinaryArray(const PlistHelperData& d, int objRef);
 		static std::vector<int32_t> getRefsForContainers(const PlistHelperData& d, int objRef);
-		static int64_t parseBinaryInt(const PlistHelperData& d, int headerPosition);
+		static int64_t parseBinaryInt(const PlistHelperData& d, int headerPosition, int& intByteCount);
 		static double parseBinaryReal(const PlistHelperData& d, int headerPosition);
 		static PlistDate parseBinaryDate(const PlistHelperData& d, int headerPosition);
 		static bool parseBinaryBool(const PlistHelperData& d, int headerPosition);
@@ -167,7 +167,7 @@ class Plist
 		static inline std::vector<unsigned char> regulateNullBytes(const std::vector<unsigned char>& origBytes, unsigned int minBytes);
 		static void parseTrailer(PlistHelperData& d, const std::vector<unsigned char>& trailer);
 		static void parseOffsetTable(PlistHelperData& d, const std::vector<unsigned char>& offsetTableBytes);
-		static int32_t getCount(const PlistHelperData& d, int bytePosition, unsigned char headerByte);
+		static int32_t getCount(const PlistHelperData& d, int bytePosition, unsigned char headerByte, int& startOffset);
 
 		// binary writing
 		
@@ -941,7 +941,8 @@ inline boost::any Plist::parseBinary(const PlistHelperData& d, int objRef)
 			}
 		case 0x10:
 			{
-				return parseBinaryInt(d, d._offsetTable[objRef]);
+				int intByteCount;
+				return parseBinaryInt(d, d._offsetTable[objRef], intByteCount);
 			}
 		case 0x20:
 			{
@@ -975,15 +976,9 @@ inline std::vector<int32_t> Plist::getRefsForContainers(const PlistHelperData& d
 {
 	using namespace std;
 	int32_t refCount = 0;
-	refCount = getCount(d, d._offsetTable[objRef], d._objectTable[d._offsetTable[objRef]]);
-
 	int refStartPosition;
-
-	if (refCount < 15)
-		refStartPosition = d._offsetTable[objRef] + 1;
-	else
-		refStartPosition = d._offsetTable[objRef] + 2 + regulateNullBytes(intToBytes<int32_t>(refCount), 1).size();
-
+	refCount = getCount(d, d._offsetTable[objRef], d._objectTable[d._offsetTable[objRef]], refStartPosition);
+	refStartPosition += d._offsetTable[objRef];
 
 	vector<int32_t> refs;
 	int mult = 1;
@@ -1040,23 +1035,20 @@ inline std::map<std::string, boost::any> Plist::parseBinaryDictionary(const Plis
 inline std::string Plist::parseBinaryString(const PlistHelperData& d, int headerPosition)
 {
 	unsigned char headerByte = d._objectTable[headerPosition];
-	int32_t charCount = getCount(d, headerPosition, headerByte);
 	int charStartPosition;
-	if (charCount < 15)
-		charStartPosition = headerPosition + 1;
-	else
-		charStartPosition = headerPosition + 2 + regulateNullBytes(intToBytes<int32_t>(charCount), 1).size();
+	int32_t charCount = getCount(d, headerPosition, headerByte, charStartPosition);
+	charStartPosition += headerPosition;
 
 	std::vector<unsigned char> characterBytes = getRange(d._objectTable, charStartPosition, charCount);
 	std::string buffer = std::string((char*) vecData(characterBytes), characterBytes.size()); 
 	return buffer;
 }
 
-inline int64_t Plist::parseBinaryInt(const PlistHelperData& d, int headerPosition)
+inline int64_t Plist::parseBinaryInt(const PlistHelperData& d, int headerPosition, int& intByteCount)
 {
 	unsigned char header = d._objectTable[headerPosition];
-	int byteCount = pow(2., header & 0xf);
-	std::vector<unsigned char> buffer = getRange(d._objectTable, headerPosition + 1, byteCount);
+	intByteCount = pow(2., header & 0xf);
+	std::vector<unsigned char> buffer = getRange(d._objectTable, headerPosition + 1, intByteCount);
 	reverse(buffer.begin(), buffer.end());
 
 	return bytesToInt<int64_t>(vecData(regulateNullBytes(buffer, 4)));
@@ -1120,24 +1112,26 @@ inline PlistDate Plist::parseBinaryDate(const PlistHelperData& d, int headerPosi
 inline std::vector<char> Plist::parseBinaryByteArray(const PlistHelperData& d, int headerPosition)
 {
 	unsigned char headerByte = d._objectTable[headerPosition];
-	int32_t byteCount = getCount(d, headerPosition, headerByte);
 	int byteStartPosition;
-	if (byteCount < 15)
-		byteStartPosition = headerPosition + 1;
-	else
-		byteStartPosition = headerPosition + 2 + regulateNullBytes(intToBytes<int32_t>(byteCount), 1).size();
+	int32_t byteCount = getCount(d, headerPosition, headerByte, byteStartPosition);
+	byteStartPosition += headerPosition;
 
 	return getRange((const char*) vecData(d._objectTable), byteStartPosition, byteCount);
 }
 
-inline int32_t Plist::getCount(const PlistHelperData& d, int bytePosition, unsigned char headerByte)
+inline int32_t Plist::getCount(const PlistHelperData& d, int bytePosition, unsigned char headerByte, int& startOffset)
 {
 	unsigned char headerByteTrail = headerByte & 0xf;
 	if (headerByteTrail < 15)
+	{
+		startOffset = 1;
 		return headerByteTrail;
+	}
 	else
 	{
-		return parseBinaryInt(d, bytePosition + 1);
+		int32_t count = parseBinaryInt(d, bytePosition + 1, startOffset);
+		startOffset += 2;
+		return count;
 	}
 }
 

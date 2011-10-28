@@ -56,6 +56,12 @@ arrays.  Again, see the test suite code src/plistTests.cpp for comprehensive
 examples. 
 
 -----------------
+LIMITATIONS
+-----------------
+
+Unicode strings are currently not supported. 
+
+-----------------
 INSTALL
 -----------------
 
@@ -93,3 +99,5 @@ cmake ..
 start Plist.sln  (build solution)
 cd ..
 runTests.bat Release
+
+

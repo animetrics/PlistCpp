@@ -20,7 +20,7 @@ include_directories (include ${CMAKE_SOURCE_DIR}/${ARCH_DIR}/include)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -DTEST_VERBOSE")
 
 add_executable(runTests src/runTests.cpp src/plistTests.cpp src/pugixml.cpp)
 

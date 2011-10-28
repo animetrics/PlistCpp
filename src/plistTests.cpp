@@ -21,9 +21,9 @@ static void createMessage(map<string, boost::any>& dict)
 		dict["testFloat"] = 1.34223f;
 		dict["testBoolTrue"] = true;
 		dict["testBoolFalse"] = false;
-		std::ifstream stream("testImage.jpg", std::ios::binary);
+		std::ifstream stream("testImage.png", std::ios::binary);
 		if(!stream)
-			throw std::runtime_error("Can't open file: testImage.jpg");
+			throw std::runtime_error("Can't open file: testImage.png");
 
 		int start = stream.tellg();
 		stream.seekg(0, std::ifstream::end);
@@ -76,9 +76,9 @@ static void checkDictionary(const map<string, boost::any>& dict)
 		int actualInt = -3455;
 
 		// checking byte array
-		std::ifstream stream("testImage.jpg", std::ios::binary);
+		std::ifstream stream("testImage.png", std::ios::binary);
 		if(!stream)
-			throw std::runtime_error("Can't open file: testImage.jpg");
+			throw std::runtime_error("Can't open file: testImage.png");
 
 		int start = stream.tellg();
 		stream.seekg(0, std::ifstream::end);
@@ -94,98 +94,159 @@ static void checkDictionary(const map<string, boost::any>& dict)
 			throw std::runtime_error("Can't read zero length data");
 		}
 
-		cout<<"   Checking data..."<<endl<<"     length: ";
-		cout.flush();
+#ifdef TEST_VERBOSE
+		cout<<"   Checking data..."<<endl<<"     length: "<<endl;
+#endif
+
+
 		const vector<char>& plistData = boost::any_cast<const vector<char>& >(dict.find("testImage")->second);
 
 		// length
 		CHECK_EQUAL(actualData.size(), plistData.size());
-		cout<<"done."<<endl<<"     Data values: ";
+#ifdef TEST_VERBOSE
+		cout<<"                            done."<<endl<<"     Data values: "<<endl;
+#endif
+
 
 		// data
 		CHECK_ARRAY_EQUAL(actualData.data(), plistData.data(), actualData.size());
-		cout<<"done."<<endl;
+#ifdef TEST_VERBOSE
+		cout<<"                            done."<<endl;
+#endif
+
 
 		// checking double
 
-		cout<<"   Checking double... ";
-		cout.flush();
+#ifdef TEST_VERBOSE
+		cout<<"   Checking double... "<<endl;
+#endif
+
+
 		CHECK_CLOSE(actualDouble,boost::any_cast<const double&>(dict.find("testDouble")->second), 1E-5); 
-		cout<<"done."<<endl;
+#ifdef TEST_VERBOSE
+		cout<<"                            done."<<endl;
+#endif
+
 
 		// checking float 
 		
-		cout<<"   Checking float... ";
-		cout.flush();
+#ifdef TEST_VERBOSE
+		cout<<"   Checking float... "<<endl;
+#endif
+
+
 		CHECK_CLOSE(actualDouble,boost::any_cast<const double&>(dict.find("testFloat")->second), 1E-5); 
-		cout<<"done."<<endl;
+#ifdef TEST_VERBOSE
+		cout<<"                            done."<<endl;
+#endif
+
 
 		// checking int
-		cout<<"   Checking int... ";
-		cout.flush();
+#ifdef TEST_VERBOSE
+		cout<<"   Checking int... "<<endl;
+#endif
+
+
 		CHECK_EQUAL(actualInt, boost::any_cast<const int64_t&>(dict.find("testInt")->second));
-		cout<<"done."<<endl;
+#ifdef TEST_VERBOSE
+		cout<<"                            done."<<endl;
+#endif
+
 
 		// checking string
-		cout<<"   Checking string... ";
-		cout.flush();
+#ifdef TEST_VERBOSE
+		cout<<"   Checking string... "<<endl;
+#endif
+
+
 		CHECK_ARRAY_EQUAL(actualString.c_str(),  boost::any_cast<const string&>(dict.find("testString")->second).c_str(), actualString.size());
-		cout<<"done."<<endl;
+#ifdef TEST_VERBOSE
+		cout<<"                            done."<<endl;
+#endif
+
 
 		// checking array
-		cout<<"   Checking array... ";
-		cout.flush();
+#ifdef TEST_VERBOSE
+		cout<<"   Checking array... "<<endl;
+#endif
+
 		const vector<boost::any>& plistArray = boost::any_cast<const vector<boost::any>& >(dict.find("testArray")->second);
 		int actualArrayItem0 = 34;
 		string actualArrayItem1 = "string item in array";
 		CHECK_EQUAL(actualArrayItem0, boost::any_cast<const int64_t&>(plistArray[0]));
 		CHECK_ARRAY_EQUAL(actualArrayItem1.c_str(), boost::any_cast<const string&>(plistArray[1]).c_str(), actualArrayItem1.size());
-		cout<<"done."<<endl;
+#ifdef TEST_VERBOSE
+		cout<<"                            done."<<endl;
+#endif
+
 
 		// checking long array (need to do this because there is different logic if
 		// the length of the array is >= 15 elements
 		
-		cout<<"   Checking long array... ";
-		cout.flush();
+#ifdef TEST_VERBOSE
+		cout<<"   Checking long array... "<<endl;
+#endif
+
 		const vector<boost::any>& plistArrayLarge = boost::any_cast<const vector<boost::any>& >(dict.find("testArrayLarge")->second);
 		int i = 0;
 		for(vector<boost::any>::const_iterator it = plistArrayLarge.begin(); 
 				i < 256;
 				++it, ++i)
 			CHECK_EQUAL(i, boost::any_cast<const int64_t&>(*it));
-		cout<<"done."<<endl;
+#ifdef TEST_VERBOSE
+		cout<<"                            done."<<endl;
+#endif
+
 
 		// checking long dict (need to do this because there is different logic if the length
 		// of the dict is >= 15 elements
 		
-		cout<<"   Checking long dict... ";
+#ifdef TEST_VERBOSE
+		cout<<"   Checking long dict... "<<endl;
+#endif
+
 		const map<string, boost::any>& plistDictLarge = boost::any_cast<const map<string, boost::any>& >(dict.find("testDictLarge")->second);
 		i = 0;
 		for(map<string, boost::any>::const_iterator it = plistDictLarge.begin();
 				i < 256;
 				++it, ++i)
 			CHECK_EQUAL(i, boost::any_cast<const int64_t&>(it->second));
-		cout<<"done."<<endl;
+#ifdef TEST_VERBOSE
+		cout<<"                            done."<<endl;
+#endif
+
 
 		// checking date
 
-		cout<<"   Checking date... ";
-		cout.flush();
+#ifdef TEST_VERBOSE
+		cout<<"   Checking date... "<<endl;
+#endif
+
+
 		int actualDate = 338610664;
 		CHECK_EQUAL((int) actualDate, (int) boost::any_cast<const PlistDate&>(dict.find("testDate")->second).timeAsAppleEpoch());
 //		cout<<"time as xml convention "<<boost::any_cast<const PlistDate&>(dict.find("testDate")->second).timeAsXMLConvention()<<endl;
-		cout<<"done."<<endl;
+#ifdef TEST_VERBOSE
+		cout<<"                            done."<<endl;
+#endif
+
 
 
 		// checking bools
 
-		cout<<"   Checking bools... ";
-		cout.flush();
+#ifdef TEST_VERBOSE
+		cout<<"   Checking bools... "<<endl;
+#endif
+
+
 		bool actualTrue = true;
 		bool actualFalse = false;
 		CHECK_EQUAL(actualTrue, boost::any_cast<const bool&>(dict.find("testBoolTrue")->second));
 		CHECK_EQUAL(actualFalse, boost::any_cast<const bool&>(dict.find("testBoolFalse")->second));
-		cout<<"done."<<endl;
+#ifdef TEST_VERBOSE
+		cout<<"                            done."<<endl;
+#endif
+
 
 //		cout<<"testString = "<<boost::any_cast<const string&>(dict.find("testString")->second)<<endl;
 //		cout<<"testDouble = "<<boost::any_cast<const double&>(dict.find("testDouble")->second)<<endl;
@@ -203,9 +264,15 @@ SUITE(PLIST_TESTS)
 		map<string, boost::any> dict; 
 		Plist::readPlist("XMLExample1.plist", dict);
 
+#ifdef TEST_VERBOSE
 		cout<<"READ_XML test"<<endl<<endl;
+#endif
+
 		checkDictionary(dict);
+#ifdef TEST_VERBOSE
 		cout<<endl<<"READ_XML test done"<<endl<<endl;
+#endif
+
 	}
 
 	TEST(READ_BINARY)
@@ -213,38 +280,59 @@ SUITE(PLIST_TESTS)
 		map<string, boost::any> dict; 
 		Plist::readPlist("binaryExample1.plist", dict);
 
+#ifdef TEST_VERBOSE
 		cout<<"READ_BINARY test"<<endl<<endl;
+#endif
+
 		checkDictionary(dict);
+#ifdef TEST_VERBOSE
 		cout<<endl<<"READ_BINARY test done"<<endl<<endl;
+#endif
+
 	}
 
 	TEST(WRITE_BINARY)
 	{
 		map<string, boost::any> dict;
 		createMessage(dict);
+#ifdef TEST_VERBOSE
 		cout<<"WRITE_BINARY test"<<endl<<endl;
+#endif
+
 		Plist::writePlistBinary("binaryExampleWritten.plist", dict);
 		dict.clear();
 		Plist::readPlist("binaryExampleWritten.plist", dict);
 		checkDictionary(dict);
+#ifdef TEST_VERBOSE
 		cout<<endl<<"WRITE_BINARY test done"<<endl<<endl;
+#endif
+
 	}
 
 	TEST(WRITE_XML)
 	{
 		map<string, boost::any> dict;
 		createMessage(dict);
+#ifdef TEST_VERBOSE
 		cout<<"WRITE_XML test"<<endl<<endl;
+#endif
+
 		Plist::writePlistXML("xmlExampleWritten.plist", dict);
 		dict.clear();
 		Plist::readPlist("xmlExampleWritten.plist", dict);
 		checkDictionary(dict);
+#ifdef TEST_VERBOSE
 		cout<<endl<<"WRITE_XML test done"<<endl<<endl;
+#endif
+
 	}
 
 	TEST(WRITE_BINARY_TO_BYTE_ARRAY)
 	{
+#ifdef TEST_VERBOSE
 		cout<<"WRITE_BINARY_TO_BYTE_ARRAY test"<<endl<<endl;
+#endif
+
 		vector<char> data;
 		map<string, boost::any> dict;
 		createMessage(dict);
@@ -252,12 +340,18 @@ SUITE(PLIST_TESTS)
 		map<string, boost::any> dictCheck;
 		Plist::readPlist(&data[0], data.size(), dictCheck);
 		checkDictionary(dictCheck);
+#ifdef TEST_VERBOSE
 		cout<<endl<<"WRITE_BINARY_TO_BYTE_ARRAY test done"<<endl<<endl;
+#endif
+
 	}
 
 	TEST(WRITE_XML_TO_BYTE_ARRAY)
 	{
+#ifdef TEST_VERBOSE
 		cout<<"WRITE_XML_TO_BYTE_ARRAY test"<<endl<<endl;
+#endif
+
 		vector<char> data;
 		map<string, boost::any> dict;
 		createMessage(dict);
@@ -265,7 +359,10 @@ SUITE(PLIST_TESTS)
 		map<string, boost::any> dictCheck;
 		Plist::readPlist(&data[0], data.size(), dictCheck);
 		checkDictionary(dictCheck);
+#ifdef TEST_VERBOSE
 		cout<<endl<<"WRITE_XML_TO_BYTE_ARRAY test done"<<endl<<endl;
+#endif
+
 	}
 
 	TEST(DATE)
