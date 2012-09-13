@@ -1051,7 +1051,7 @@ inline int64_t Plist::parseBinaryInt(const PlistHelperData& d, int headerPositio
 	std::vector<unsigned char> buffer = getRange(d._objectTable, headerPosition + 1, intByteCount);
 	reverse(buffer.begin(), buffer.end());
 
-	return bytesToInt<int64_t>(vecData(regulateNullBytes(buffer, 4)));
+	return bytesToInt<int64_t>(vecData(regulateNullBytes(buffer, 8)));
 }
 
 inline double Plist::parseBinaryReal(const PlistHelperData& d, int headerPosition)
