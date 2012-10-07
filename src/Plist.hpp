@@ -373,9 +373,9 @@ inline void Plist::writePlistBinary(
 				const std::string& filename, 
 				const boost::any& message)
 {
-  std::ofstream stream(filename.c_str(), std::ios::binary);
-  writePlistBinary(stream, message);
-  stream.close();
+	std::ofstream stream(filename.c_str(), std::ios::binary);
+	writePlistBinary(stream, message);
+	stream.close();
 }
 
 inline void Plist::writePlistBinary(
@@ -774,13 +774,12 @@ inline void Plist::readPlist(const std::wstring& filename, T& message)
 template <typename T>
 inline void Plist::readPlist(const std::string& filename, T& message)
 {
-  std::ifstream stream(filename.c_str(), std::ios::binary);
-  if(!stream)
+	std::ifstream stream(filename.c_str(), std::ios::binary);
+	if(!stream)
 		throw std::runtime_error((std::string("Can't open file: ") + filename).c_str());
-  readPlist(stream, message);
-  stream.close();
+	readPlist(stream, message);
+	stream.close();
 }
-
 
 inline void Plist::readPlist(const char* byteArrayTemp, int64_t size, boost::any& message)
 {
