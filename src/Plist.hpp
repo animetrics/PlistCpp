@@ -776,7 +776,7 @@ inline void Plist::readPlist(const char* byteArrayTemp, int64_t size, T& message
 	else
 	{
 		pugi::xml_document doc;
-		pugi::xml_parse_result result = doc.load_buffer(byteArray, size);
+		pugi::xml_parse_result result = doc.load_buffer(byteArray, (size_t)size);
 		if(!result)
 			throw std::runtime_error((string("Plist: XML parsed with error ") + result.description()).c_str());
 
@@ -1047,7 +1047,7 @@ inline std::string Plist::parseBinaryString(const PlistHelperData& d, int header
 inline int64_t Plist::parseBinaryInt(const PlistHelperData& d, int headerPosition, int& intByteCount)
 {
 	unsigned char header = d._objectTable[headerPosition];
-	intByteCount = pow(2., header & 0xf);
+	intByteCount = (int)pow(2., header & 0xf);
 	std::vector<unsigned char> buffer = getRange(d._objectTable, headerPosition + 1, intByteCount);
 	reverse(buffer.begin(), buffer.end());
 
@@ -1057,7 +1057,7 @@ inline int64_t Plist::parseBinaryInt(const PlistHelperData& d, int headerPositio
 inline double Plist::parseBinaryReal(const PlistHelperData& d, int headerPosition)
 {
 	unsigned char header = d._objectTable[headerPosition];
-	int byteCount = pow(2., header & 0xf);
+	int byteCount = (int)pow(2., header & 0xf);
 	std::vector<unsigned char> buffer = getRange(d._objectTable, headerPosition + 1, byteCount);
 	reverse(buffer.begin(), buffer.end());
 
@@ -1129,7 +1129,7 @@ inline int32_t Plist::getCount(const PlistHelperData& d, int bytePosition, unsig
 	}
 	else
 	{
-		int32_t count = parseBinaryInt(d, bytePosition + 1, startOffset);
+		int32_t count = (int32_t)parseBinaryInt(d, bytePosition + 1, startOffset);
 		startOffset += 2;
 		return count;
 	}
@@ -1198,14 +1198,14 @@ inline std::vector<unsigned char> Plist::intToBytes(IntegerType val, bool little
 
 inline std::vector<unsigned char> Plist::getRange(const unsigned char* origBytes, int64_t index, int64_t size)
 {
-	std::vector<unsigned char> result(size);
+	std::vector<unsigned char> result((std::vector<unsigned char>::size_type)size);
 	std::copy(origBytes + index, origBytes + index + size, result.begin());
 	return result;
 }
 
 inline std::vector<char> Plist::getRange(const char* origBytes, int64_t index, int64_t size)
 {
-	std::vector<char> result(size);
+	std::vector<char> result((std::vector<char>::size_type)size);
 	std::copy(origBytes + index, origBytes + index + size, result.begin());
 	return result;
 }
