@@ -53,6 +53,7 @@ class Plist
 
 		// Public read methods.  Plist type (binary or xml) automatically detected.
 		
+		static void readPlist(const char* byteArrayTemp, int64_t size, boost::any& message);
 		template<typename T>
 		static void readPlist(const char* byteArray, int64_t size, T& message);
 		template<typename T>
@@ -781,8 +782,7 @@ inline void Plist::readPlist(const std::string& filename, T& message)
 }
 
 
-template<typename T>
-inline void Plist::readPlist(const char* byteArrayTemp, int64_t size, T& message)
+inline void Plist::readPlist(const char* byteArrayTemp, int64_t size, boost::any& message)
 {
 	using namespace std;
 	const unsigned char* byteArray = (const unsigned char*) byteArrayTemp;
@@ -803,7 +803,7 @@ inline void Plist::readPlist(const char* byteArrayTemp, int64_t size, T& message
 
 		parseOffsetTable(d, offsetTableBytes);
 
-		message = boost::any_cast<T>(parseBinary(d, 0));
+		message = parseBinary(d, 0);
 	}
 	else
 	{
@@ -813,9 +813,17 @@ inline void Plist::readPlist(const char* byteArrayTemp, int64_t size, T& message
 			throw std::runtime_error((string("Plist: XML parsed with error ") + result.description()).c_str());
 
 		pugi::xml_node rootNode = doc.child("plist").first_child();
-		message = boost::any_cast<T>(parse(rootNode));
+		message = parse(rootNode);
 	}
 
+}
+
+template<typename T>
+inline void Plist::readPlist(const char* byteArrayTemp, int64_t size, T& message)
+{
+	boost::any tmp_message;
+	readPlist(byteArrayTemp, size, tmp_message);
+	message = boost::any_cast<T>(tmp_message);
 }
 
 inline std::map<std::string, boost::any> Plist::parseDictionary(pugi::xml_node& node)
