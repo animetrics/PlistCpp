@@ -1148,7 +1148,7 @@ inline IntegerType Plist::bytesToInt(const unsigned char* bytes, bool littleEndi
 {
 	IntegerType result = 0;
 	if (littleEndian)
-		for (int n = sizeof( result ); n >= 0; n--)
+		for (int n = sizeof( result ) - 1; n >= 0; n--)
 			result = (result << 8) + bytes[n];
 	else
 		for (unsigned n = 0; n < sizeof( result ); n++)
