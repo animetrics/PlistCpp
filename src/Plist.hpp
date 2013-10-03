@@ -53,24 +53,29 @@ class Plist
 
 		// Public read methods.  Plist type (binary or xml) automatically detected.
 		
+		static void readPlist(const char* byteArrayTemp, int64_t size, boost::any& message);
 		template<typename T>
 		static void readPlist(const char* byteArray, int64_t size, T& message);
 		template<typename T>
 		static void readPlist(std::istream& stream, T& message);
 		template<typename T>
 		static void readPlist(const std::string& filename, T& message);
+		template<typename T>
+		static void readPlist(const std::wstring& filename, T& message);
 
 		// Public binary write methods.
 		
 		static void writePlistBinary(std::ostream& stream, const boost::any& message);
 		static void writePlistBinary(std::vector<char>& plist, const boost::any& message);
 		static void writePlistBinary(const std::string& filename, const boost::any& message);
+		static void writePlistBinary(const std::wstring& filename, const boost::any& message);
 
 		// Public XML write methods.
 		
 		static void writePlistXML(std::ostream& stream, const boost::any& message);
 		static void writePlistXML(std::vector<char>& plist, const boost::any& message);
 		static void writePlistXML(const std::string& filename, const boost::any& message);
+		static void writePlistXML(const std::wstring& filename, const boost::any& message);
 
 	private:
 
@@ -368,9 +373,18 @@ inline void Plist::writePlistBinary(
 				const std::string& filename, 
 				const boost::any& message)
 {
-  std::ofstream stream(filename.c_str(), std::ios::binary);
-  writePlistBinary(stream, message);
-  stream.close();
+	std::ofstream stream(filename.c_str(), std::ios::binary);
+	writePlistBinary(stream, message);
+	stream.close();
+}
+
+inline void Plist::writePlistBinary(
+				const std::wstring& filename,
+				const boost::any& message)
+{
+	std::ofstream stream(filename.c_str(), std::ios::binary);
+	writePlistBinary(stream, message);
+	stream.close();
 }
 
 inline void Plist::writePlistXML(std::vector<char>& plist, const boost::any& message)
@@ -398,6 +412,15 @@ inline void Plist::writePlistXML(
 		const boost::any& message)
 {
 
+	std::ofstream stream(filename.c_str(), std::ios::binary);
+	writePlistXML(stream, message);
+	stream.close();
+}
+
+inline void Plist::writePlistXML(
+		const std::wstring& filename,
+		const boost::any& message)
+{
 	std::ofstream stream(filename.c_str(), std::ios::binary);
 	writePlistXML(stream, message);
 	stream.close();
@@ -739,18 +762,26 @@ inline void Plist::readPlist( std::istream& stream, T& message)
 }
 
 template <typename T>
-inline void Plist::readPlist(const std::string& filename, T& message)
+inline void Plist::readPlist(const std::wstring& filename, T& message)
 {
-  std::ifstream stream(filename.c_str(), std::ios::binary);
-  if(!stream)
-		throw std::runtime_error((std::string("Can't open file: ") + filename).c_str());
-  readPlist(stream, message);
-  stream.close();
+	std::ifstream stream(filename.c_str(), std::ios::binary);
+	if(!stream)
+		throw std::runtime_error("Can't open file.");
+	readPlist(stream, message);
+	stream.close();
 }
 
+template <typename T>
+inline void Plist::readPlist(const std::string& filename, T& message)
+{
+	std::ifstream stream(filename.c_str(), std::ios::binary);
+	if(!stream)
+		throw std::runtime_error((std::string("Can't open file: ") + filename).c_str());
+	readPlist(stream, message);
+	stream.close();
+}
 
-template<typename T>
-inline void Plist::readPlist(const char* byteArrayTemp, int64_t size, T& message)
+inline void Plist::readPlist(const char* byteArrayTemp, int64_t size, boost::any& message)
 {
 	using namespace std;
 	const unsigned char* byteArray = (const unsigned char*) byteArrayTemp;
@@ -771,19 +802,27 @@ inline void Plist::readPlist(const char* byteArrayTemp, int64_t size, T& message
 
 		parseOffsetTable(d, offsetTableBytes);
 
-		message = boost::any_cast<T>(parseBinary(d, 0));
+		message = parseBinary(d, 0);
 	}
 	else
 	{
 		pugi::xml_document doc;
-		pugi::xml_parse_result result = doc.load_buffer(byteArray, size);
+		pugi::xml_parse_result result = doc.load_buffer(byteArray, (size_t)size);
 		if(!result)
 			throw std::runtime_error((string("Plist: XML parsed with error ") + result.description()).c_str());
 
 		pugi::xml_node rootNode = doc.child("plist").first_child();
-		message = boost::any_cast<T>(parse(rootNode));
+		message = parse(rootNode);
 	}
 
+}
+
+template<typename T>
+inline void Plist::readPlist(const char* byteArrayTemp, int64_t size, T& message)
+{
+	boost::any tmp_message;
+	readPlist(byteArrayTemp, size, tmp_message);
+	message = boost::any_cast<T>(tmp_message);
 }
 
 inline std::map<std::string, boost::any> Plist::parseDictionary(pugi::xml_node& node)
@@ -1047,7 +1086,7 @@ inline std::string Plist::parseBinaryString(const PlistHelperData& d, int header
 inline int64_t Plist::parseBinaryInt(const PlistHelperData& d, int headerPosition, int& intByteCount)
 {
 	unsigned char header = d._objectTable[headerPosition];
-	intByteCount = pow(2., header & 0xf);
+	intByteCount = (int)pow(2., header & 0xf);
 	std::vector<unsigned char> buffer = getRange(d._objectTable, headerPosition + 1, intByteCount);
 	reverse(buffer.begin(), buffer.end());
 
@@ -1057,7 +1096,7 @@ inline int64_t Plist::parseBinaryInt(const PlistHelperData& d, int headerPositio
 inline double Plist::parseBinaryReal(const PlistHelperData& d, int headerPosition)
 {
 	unsigned char header = d._objectTable[headerPosition];
-	int byteCount = pow(2., header & 0xf);
+	int byteCount = (int)pow(2., header & 0xf);
 	std::vector<unsigned char> buffer = getRange(d._objectTable, headerPosition + 1, byteCount);
 	reverse(buffer.begin(), buffer.end());
 
@@ -1129,7 +1168,7 @@ inline int32_t Plist::getCount(const PlistHelperData& d, int bytePosition, unsig
 	}
 	else
 	{
-		int32_t count = parseBinaryInt(d, bytePosition + 1, startOffset);
+		int32_t count = (int32_t)parseBinaryInt(d, bytePosition + 1, startOffset);
 		startOffset += 2;
 		return count;
 	}
@@ -1198,14 +1237,14 @@ inline std::vector<unsigned char> Plist::intToBytes(IntegerType val, bool little
 
 inline std::vector<unsigned char> Plist::getRange(const unsigned char* origBytes, int64_t index, int64_t size)
 {
-	std::vector<unsigned char> result(size);
+	std::vector<unsigned char> result((std::vector<unsigned char>::size_type)size);
 	std::copy(origBytes + index, origBytes + index + size, result.begin());
 	return result;
 }
 
 inline std::vector<char> Plist::getRange(const char* origBytes, int64_t index, int64_t size)
 {
-	std::vector<char> result(size);
+	std::vector<char> result((std::vector<char>::size_type)size);
 	std::copy(origBytes + index, origBytes + index + size, result.begin());
 	return result;
 }
