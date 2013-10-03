@@ -173,7 +173,7 @@ class PlistDate
 
 		void setTimeFromAppleEpoch(double appleTime)
 		{
-			_time = 978307200 + appleTime;
+			_time = time_t(978307200 + appleTime);
 		}
 
 		time_t timeAsEpoch() const
