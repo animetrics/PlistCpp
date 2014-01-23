@@ -27,6 +27,7 @@
 #define __PLIST_H__
 
 #include <boost/any.hpp>
+#include <boost/locale/encoding_utf.hpp>
 #include <string>
 #include <vector>
 #include <list>
@@ -168,6 +169,7 @@ class Plist
 		static PlistDate parseBinaryDate(const PlistHelperData& d, int headerPosition);
 		static bool parseBinaryBool(const PlistHelperData& d, int headerPosition);
 		static std::string parseBinaryString(const PlistHelperData& d, int objRef);
+		static std::string parseBinaryUnicode(const PlistHelperData& d, int headerPosition, bool littleEndian = true);
 		static std::vector<char> parseBinaryByteArray(const PlistHelperData& d, int headerPosition);
 		static inline std::vector<unsigned char> regulateNullBytes(const std::vector<unsigned char>& origBytes, unsigned int minBytes);
 		static void parseTrailer(PlistHelperData& d, const std::vector<unsigned char>& trailer);
@@ -999,6 +1001,10 @@ inline boost::any Plist::parseBinary(const PlistHelperData& d, int objRef)
 			{
 				return parseBinaryString(d, d._offsetTable[objRef]);
 			}
+		case 0x60:
+			{
+				return parseBinaryUnicode(d, d._offsetTable[objRef]);
+			}
 		case 0xD0:
 			{
 				return parseBinaryDictionary(d, objRef);
@@ -1081,6 +1087,27 @@ inline std::string Plist::parseBinaryString(const PlistHelperData& d, int header
 	std::vector<unsigned char> characterBytes = getRange(d._objectTable, charStartPosition, charCount);
 	std::string buffer = std::string((char*) vecData(characterBytes), characterBytes.size()); 
 	return buffer;
+}
+
+inline std::string Plist::parseBinaryUnicode(const PlistHelperData& d, int headerPosition, bool littleEndian)
+{
+	unsigned char headerByte = d._objectTable[headerPosition];
+	int charStartPosition;
+	int32_t charCount = getCount(d, headerPosition, headerByte, charStartPosition);
+	charStartPosition += headerPosition;
+
+	std::vector<unsigned char> characterBytes = getRange(d._objectTable, charStartPosition, charCount * 2);
+	if (littleEndian) {
+		if (! characterBytes.empty()) {
+			for (std::size_t i = 0, n = characterBytes.size(); i < n - 1; i += 2)
+				std::swap(characterBytes[i], characterBytes[i + 1]);
+		}
+	}
+
+	int16_t *u16chars = (int16_t*) vecData(characterBytes);
+	std::size_t u16len = characterBytes.size() / 2;
+	std::string result = boost::locale::conv::utf_to_utf<char, int16_t>(u16chars, u16chars + u16len, boost::locale::conv::stop);
+	return result;
 }
 
 inline int64_t Plist::parseBinaryInt(const PlistHelperData& d, int headerPosition, int& intByteCount)
