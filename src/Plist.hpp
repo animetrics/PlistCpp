@@ -61,22 +61,28 @@ class Plist
 		static void readPlist(std::istream& stream, T& message);
 		template<typename T>
 		static void readPlist(const std::string& filename, T& message);
+#if defined(_MSC_VER)
 		template<typename T>
 		static void readPlist(const std::wstring& filename, T& message);
+#endif
 
 		// Public binary write methods.
 		
 		static void writePlistBinary(std::ostream& stream, const boost::any& message);
 		static void writePlistBinary(std::vector<char>& plist, const boost::any& message);
 		static void writePlistBinary(const std::string& filename, const boost::any& message);
+#if defined(_MSC_VER)
 		static void writePlistBinary(const std::wstring& filename, const boost::any& message);
+#endif
 
 		// Public XML write methods.
 		
 		static void writePlistXML(std::ostream& stream, const boost::any& message);
 		static void writePlistXML(std::vector<char>& plist, const boost::any& message);
 		static void writePlistXML(const std::string& filename, const boost::any& message);
+#if defined(_MSC_VER)
 		static void writePlistXML(const std::wstring& filename, const boost::any& message);
+#endif
 
 	private:
 
@@ -380,6 +386,7 @@ inline void Plist::writePlistBinary(
 	stream.close();
 }
 
+#if defined(_MSC_VER)
 inline void Plist::writePlistBinary(
 				const std::wstring& filename,
 				const boost::any& message)
@@ -388,6 +395,7 @@ inline void Plist::writePlistBinary(
 	writePlistBinary(stream, message);
 	stream.close();
 }
+#endif
 
 inline void Plist::writePlistXML(std::vector<char>& plist, const boost::any& message)
 {
@@ -419,6 +427,7 @@ inline void Plist::writePlistXML(
 	stream.close();
 }
 
+#if defined(_MSC_VER)
 inline void Plist::writePlistXML(
 		const std::wstring& filename,
 		const boost::any& message)
@@ -427,6 +436,7 @@ inline void Plist::writePlistXML(
 	writePlistXML(stream, message);
 	stream.close();
 }
+#endif
 
 inline int Plist::countAny(const boost::any& object)
 {
@@ -763,6 +773,7 @@ inline void Plist::readPlist( std::istream& stream, T& message)
 
 }
 
+#if defined(_MSC_VER)
 template <typename T>
 inline void Plist::readPlist(const std::wstring& filename, T& message)
 {
@@ -772,6 +783,7 @@ inline void Plist::readPlist(const std::wstring& filename, T& message)
 	readPlist(stream, message);
 	stream.close();
 }
+#endif
 
 template <typename T>
 inline void Plist::readPlist(const std::string& filename, T& message)
