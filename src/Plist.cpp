@@ -848,7 +848,7 @@ boost::any Plist::parse(pugi::xml_node& node)
 	else if("string" == nodeName)
 		result = string(node.first_child().value());
 	else if("integer" == nodeName)
-		result = (int64_t) atoi(node.first_child().value());
+		result = (int64_t) atoll(node.first_child().value());
 	else if("real" == nodeName)
 		result = atof(node.first_child().value());
 	else if("false" == nodeName)
