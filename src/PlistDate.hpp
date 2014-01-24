@@ -30,164 +30,50 @@
 #include <ctime>
 #include <string>
 
-class PlistDate
+namespace Plist {
+
+class Date
 {
 	public:
-		PlistDate()
-		{
-			setToCurrentTime();
-		}
+		Date();
 
-		PlistDate(int month, int day, int year, int hour24, int minute, int second, bool UTC) 
-		{
-			set(month, day, year, hour24, minute, second, UTC);
-		}
+		Date(int month, int day, int year, int hour24, int minute, int second, bool UTC);
 
-		void set(int month, int day, int year, int hour24, int minute, int second, bool UTC) 
-		{
-			struct tm tmTime;
-			tmTime.tm_hour = hour24;
-			tmTime.tm_mday = day;
-			tmTime.tm_year = year - 1900;
-			tmTime.tm_sec = second;
-			tmTime.tm_mon = month - 1;
-			tmTime.tm_min = minute;
+		void set(int month, int day, int year, int hour24, int minute, int second, bool UTC);
 
-			//get proper day light savings. 
+		void setToCurrentTime();
 
-			time_t loc = time(NULL);
-			struct tm tmLoc = *localtime(&loc);
-			//std::cout<<"tmLoc.tm_isdst = "<<tmLoc.tm_isdst<<std::endl;
-			tmTime.tm_isdst = tmLoc.tm_isdst;
-
-			if(UTC)
-			{
-				//_time = timegm(&tmTime);
-
-				tmTime.tm_isdst = 0;
-				_time = mktime(&tmTime);
-				if(_time < -1)
-					throw std::runtime_error("PlistDate::set() date invalid");
-
-				// don't have timegm for all systems so here's a portable way to do it.
-				
-				struct tm tmTimeTemp;
-#if defined(_WIN32) || defined(_WIN64)
-				gmtime_s(&tmTimeTemp, &_time);
-#else
-				gmtime_r(&_time, &tmTimeTemp);
-#endif
-
-				time_t timeTemp = mktime(&tmTimeTemp);
-
-				time_t diff = _time - timeTemp;
-				_time += diff;
-			}
-			else
-			{
-				_time = mktime(&tmTime);
-				if(_time < -1)
-					throw std::runtime_error("PlistDate::set() date invalid");
-			}
-		}
-
-		void setToCurrentTime()
-		{
-			_time = time(NULL);
-		}
-
-		time_t secondsSinceDate(const PlistDate& startDate) const
-		{
-			return _time - startDate.timeAsEpoch();
-		}
+		time_t secondsSinceDate(const Date& startDate) const;
 
 		// returns -1 : first < second
 		//          0 : first = second
 		//          1 : first > second
-				
-		static int compare(const PlistDate& first, const PlistDate& second)
-		{
-			if(first.timeAsEpoch() < second.timeAsEpoch())
-				return -1;
-			else if (first.timeAsEpoch() == second.timeAsEpoch())
-				return 0;
-			else
-				return 1;
-		}
 
-		bool operator > (const PlistDate& rhs) const
-		{
-			if(compare(*this, rhs) == 1)
-				return true;
-			else
-				return false;
-		}
+		static int compare(const Date& first, const Date& second);
 
-		bool operator < (const PlistDate& rhs) const
-		{
-			if(compare(*this, rhs) == -1)
-				return true;
-			else
-				return false;
-		}
+		bool operator > (const Date& rhs) const;
 
-		bool operator == (const PlistDate& rhs) const
-		{
-			if(compare(*this, rhs) == 0)
-				return true;
-			else
-				return false;
-		}
+		bool operator < (const Date& rhs) const;
+
+		bool operator == (const Date& rhs) const;
 
 		// iso 8601 date string convention
-		std::string timeAsXMLConvention() const
-		{
-			char result[21];
-			struct tm tmTime;
-
-			// use thread safe versions here.  Notice that arguments
-			// are reversed for windows version
-#if defined(_WIN32) || defined(_WIN64)
-			gmtime_s(&tmTime, &_time);
-#else
-			gmtime_r(&_time, &tmTime);
-#endif
-			// %F and %T not portable so using %Y-%m-%d and %H:%M:%S instead
-			strftime(&result[0], 21, "%Y-%m-%dT%H:%M:%SZ", &tmTime);
-			return std::string(&result[0]);
-		}
+		std::string timeAsXMLConvention() const;
 
 		// iso 8601 date string convention
-		void setTimeFromXMLConvention(const std::string& timeString)
-		{
-			int month, day, year, hour24, minute, second;
-
-			// parse date string.  E.g.  2011-09-25T02:31:04Z
-			sscanf(timeString.c_str(), "%4d-%2d-%2dT%2d:%2d:%2dZ", &year, &month, &day, &hour24, &minute, &second);
-			set(month, day, year, hour24, minute, second, true);
-
-		}
+		void setTimeFromXMLConvention(const std::string& timeString);
 
 	// Apple epoch is # of seconds since  01-01-2001. So we need to add the
 	// number of seconds since 01-01-1970 which is proper unix epoch
 
-		void setTimeFromAppleEpoch(double appleTime)
-		{
-			_time = time_t(978307200 + appleTime);
-		}
+		void setTimeFromAppleEpoch(double appleTime);
 
-		time_t timeAsEpoch() const
-		{
-			return _time;
-		}
+		time_t timeAsEpoch() const;
 
 	// We need to subtract the number of seconds between 01-01-2001 and
 	// 01-01-1970 to get Apple epoch from unix epoch
-	
-		double timeAsAppleEpoch() const
-		{
-			return ((double) _time - 978307200);
-		}
+
+		double timeAsAppleEpoch() const;
 
 
 	private:
@@ -195,5 +81,7 @@ class PlistDate
 		// stored as unix epoch, number of seconds since 01-01-1970
 		time_t _time;
 };
+
+}
 
 #endif

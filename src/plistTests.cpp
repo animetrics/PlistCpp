@@ -8,7 +8,7 @@ using namespace std;
 
 static void createMessage(map<string, boost::any>& dict)
 {
-		PlistDate date;
+		Plist::Date date;
 		date.setTimeFromAppleEpoch(338610664);
 
 		dict["testDate"] = date;
@@ -224,8 +224,8 @@ static void checkDictionary(const map<string, boost::any>& dict)
 
 
 		int actualDate = 338610664;
-		CHECK_EQUAL((int) actualDate, (int) boost::any_cast<const PlistDate&>(dict.find("testDate")->second).timeAsAppleEpoch());
-//		cout<<"time as xml convention "<<boost::any_cast<const PlistDate&>(dict.find("testDate")->second).timeAsXMLConvention()<<endl;
+		CHECK_EQUAL((int) actualDate, (int) boost::any_cast<const Plist::Date&>(dict.find("testDate")->second).timeAsAppleEpoch());
+//		cout<<"time as xml convention "<<boost::any_cast<const Plist::Date&>(dict.find("testDate")->second).timeAsXMLConvention()<<endl;
 #ifdef TEST_VERBOSE
 		cout<<"                            done."<<endl;
 #endif
@@ -251,8 +251,8 @@ static void checkDictionary(const map<string, boost::any>& dict)
 //		cout<<"testString = "<<boost::any_cast<const string&>(dict.find("testString")->second)<<endl;
 //		cout<<"testDouble = "<<boost::any_cast<const double&>(dict.find("testDouble")->second)<<endl;
 //		cout<<"testInt = "<<boost::any_cast<const int&>(dict.find("testInt")->second)<<endl;
-//		cout<<"testDate = "<<boost::any_cast<const PlistDate&>(dict.find("testDate")->second).timeAsXMLConvention()<<endl;
-		//cout<<"testDate = "<<boost::any_cast<const PlistDate&>(dict.find("testDate")->second).timeAsAppleEpoch()<<endl;
+//		cout<<"testDate = "<<boost::any_cast<const Plist::Date&>(dict.find("testDate")->second).timeAsXMLConvention()<<endl;
+		//cout<<"testDate = "<<boost::any_cast<const Plist::Date&>(dict.find("testDate")->second).timeAsAppleEpoch()<<endl;
 
 }
 
@@ -367,20 +367,20 @@ SUITE(PLIST_TESTS)
 
 	TEST(DATE)
 	{
-		PlistDate date;
+		Plist::Date date;
 
 		// check comparisons.
 
 		double objectTime = date.timeAsAppleEpoch();
 
-		PlistDate dateGreater(date);
+		Plist::Date dateGreater(date);
 		dateGreater.setTimeFromAppleEpoch(objectTime + 1);
-		PlistDate dateLess(date);
+		Plist::Date dateLess(date);
 		dateLess.setTimeFromAppleEpoch(objectTime - 1);
 
-		CHECK_EQUAL(1, PlistDate::compare(dateGreater, dateLess));
-		CHECK_EQUAL(-1, PlistDate::compare(dateLess, dateGreater));
-		CHECK_EQUAL(0, PlistDate::compare(date, date));
+		CHECK_EQUAL(1, Plist::Date::compare(dateGreater, dateLess));
+		CHECK_EQUAL(-1, Plist::Date::compare(dateLess, dateGreater));
+		CHECK_EQUAL(0, Plist::Date::compare(date, date));
 
 		CHECK(dateGreater > dateLess);
 		CHECK(dateLess < dateGreater);

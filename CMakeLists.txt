@@ -22,7 +22,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -DTEST_VERBOSE")
 
-add_executable(runTests src/runTests.cpp src/plistTests.cpp src/pugixml.cpp)
+add_executable(runTests src/runTests.cpp src/plistTests.cpp src/pugixml.cpp
+    src/Plist.cpp src/PlistDate.cpp)
 
 IF(MSVC10)
 	target_link_libraries(runTests UnitTest++.vsnet2010-${MY_BUILD_TYPE}.lib) 
