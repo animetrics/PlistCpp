@@ -66,7 +66,7 @@ namespace Plist {
 			// if(vec.size() > 0)
 			// 	return &vec[0];
 			// else
-			// 	throw std::runtime_error("Plist::vecData trying to get pointer to empty std::vector");
+			// 	throw Error("Plist::vecData trying to get pointer to empty std::vector");
 		}
 
 		template<typename T>
@@ -76,7 +76,7 @@ namespace Plist {
 			// if(vec.size() > 0)
 			// 	return &vec[0];
 			// else
-			// 	throw std::runtime_error("Plist::vecData trying to get pointer to empty std::vector");
+			// 	throw Error("Plist::vecData trying to get pointer to empty std::vector");
 		}
 
 		// xml helper functions
@@ -217,7 +217,7 @@ void Plist::writeXMLNode(pugi::xml_node& node, const boost::any& obj)
 			node.append_child("false");
 	}
 	else
-		throw runtime_error((string("Plist Error: Can't serialize type ") + obj.type().name()).c_str());
+		throw Error((string("Plist Error: Can't serialize type ") + obj.type().name()).c_str());
 }
 
 void Plist::writeXMLArray(
@@ -455,7 +455,7 @@ std::vector<unsigned char> Plist::writeBinary(PlistHelperData& d, const boost::a
 	else if(obj.type() == aPlistBool.type())
 		value = writeBinaryBool(d, boost::any_cast<const bool&>(obj));
 	else
-		throw runtime_error((string("Plist Error: Can't serialize type ") + obj.type().name()).c_str());
+		throw Error((string("Plist Error: Can't serialize type ") + obj.type().name()).c_str());
 
 	return value;
 }
@@ -722,7 +722,7 @@ void Plist::readPlist(std::istream& stream, boost::any& message)
 	}
 	else
 	{
-		throw std::runtime_error("Can't read zero length data");
+		throw Error("Can't read zero length data");
 	}
 }
 
@@ -731,7 +731,7 @@ void Plist::readPlist(const char* byteArrayTemp, int64_t size, boost::any& messa
 	using namespace std;
 	const unsigned char* byteArray = (const unsigned char*) byteArrayTemp;
 	if (!byteArray || (size == 0))
-		throw std::runtime_error("Plist: Empty plist data");
+		throw Error("Plist: Empty plist data");
 
 	// infer plist type from header.  If it has the bplist00 header as first 8
 	// bytes, then it's a binary plist.  Otherwise, assume it's XML
@@ -754,7 +754,7 @@ void Plist::readPlist(const char* byteArrayTemp, int64_t size, boost::any& messa
 		pugi::xml_document doc;
 		pugi::xml_parse_result result = doc.load_buffer(byteArray, (size_t)size);
 		if(!result)
-			throw std::runtime_error((string("Plist: XML parsed with error ") + result.description()).c_str());
+			throw Error((string("Plist: XML parsed with error ") + result.description()).c_str());
 
 		pugi::xml_node rootNode = doc.child("plist").first_child();
 		message = parse(rootNode);
@@ -770,15 +770,15 @@ std::map<std::string, boost::any> Plist::parseDictionary(pugi::xml_node& node)
 	for(pugi::xml_node_iterator it = node.begin(); it != node.end(); ++it)
 	{
 		if(string("key") != it->name())
-			throw runtime_error("Plist: XML dictionary key expected but not found");
+			throw Error("Plist: XML dictionary key expected but not found");
 
 		string key(it->first_child().value());
 		++it;
 
 		if(it == node.end())
-			throw runtime_error("Plist: XML dictionary value expected for key " + key + "but not found");
+			throw Error("Plist: XML dictionary value expected for key " + key + "but not found");
 		else if(string("key") == it->name())
-			throw runtime_error("Plist: XML dictionary value expected for key " + key + "but found another key node");
+			throw Error("Plist: XML dictionary value expected for key " + key + "but found another key node");
 
 		dict[key] = parse(*it); 
 	}
@@ -860,7 +860,7 @@ boost::any Plist::parse(pugi::xml_node& node)
 	else if("date" == nodeName)
 		result = parseDate(node);
 	else
-		throw runtime_error(string("Plist: XML unknown node type " + nodeName));
+		throw Error(string("Plist: XML unknown node type " + nodeName));
 		
 	return result;
 }
@@ -948,7 +948,7 @@ boost::any Plist::parseBinary(const PlistHelperData& d, int objRef)
 				return parseBinaryArray(d, objRef);
 			}
 	}
-	throw std::runtime_error("This type is not supported");
+	throw Error("This type is not supported");
 }
 
 std::vector<int32_t> Plist::getRefsForContainers(const PlistHelperData& d, int objRef)
@@ -1004,7 +1004,7 @@ std::map<std::string, boost::any> Plist::parseBinaryDictionary(const PlistHelper
 		}
 		catch(boost::bad_any_cast& )
 		{
-			throw std::runtime_error("Error parsing dictionary.  Key can't be parsed as a string");
+			throw Error("Error parsing dictionary.  Key can't be parsed as a string");
 		}
 	}
 
@@ -1077,20 +1077,20 @@ bool Plist::parseBinaryBool(const PlistHelperData& d, int headerPosition)
 		// null byte, not sure yet what to do with this.  It's in the spec but we
 		// have never encountered it. 
 
-		throw std::runtime_error("Plist: null byte encountered, unsure how to parse");
+		throw Error("Plist: null byte encountered, unsure how to parse");
 	}
 	else if (header == 0x0F)
 	{
 		// fill byte, not sure yet what to do with this.  It's in the spec but we
 		// have never encountered it.
 
-		throw std::runtime_error("Plist: fill byte encountered, unsure how to parse");
+		throw Error("Plist: fill byte encountered, unsure how to parse");
 	}
 	else
 	{
 		std::stringstream ss;
 		ss<<"Plist: unknown header "<<header;
-		throw std::runtime_error(ss.str().c_str());
+		throw Error(ss.str().c_str());
 	}
 
 	return value;
@@ -1213,6 +1213,6 @@ std::vector<char> Plist::getRange(const char* origBytes, int64_t index, int64_t 
 std::vector<unsigned char> Plist::getRange(const std::vector<unsigned char>& origBytes, int64_t index, int64_t size)
 {
 	if((index + size) > (int64_t) origBytes.size())
-		throw std::runtime_error("Out of bounds getRange");
+		throw Error("Out of bounds getRange");
 	return getRange(vecData(origBytes), index, size);
 }

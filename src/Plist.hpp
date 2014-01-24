@@ -75,6 +75,15 @@ namespace Plist
 		void writePlistXML(const wchar_t* filename, const boost::any& message);
 #endif
 
+		class Error: public std::runtime_error {
+			public:
+#if __cplusplus >= 201103L
+				using std::runtime_error::runtime_error;
+#else
+				inline Error(const std::string& what)
+					: runtime_error(what) { }
+#endif
+		};
 };
 
 #if defined(_MSC_VER)
@@ -83,7 +92,7 @@ void Plist::readPlist(const wchar_t* filename, T& message)
 {
 	std::ifstream stream(filename, std::ios::binary);
 	if(!stream)
-		throw std::runtime_error("Can't open file.");
+		throw Error("Can't open file.");
 	readPlist(stream, message);
 }
 #endif
@@ -93,7 +102,7 @@ void Plist::readPlist(const char* filename, T& message)
 {
 	std::ifstream stream(filename, std::ios::binary);
 	if(!stream)
-		throw std::runtime_error("Can't open file.");
+		throw Error("Can't open file.");
 	readPlist(stream, message);
 }
 
