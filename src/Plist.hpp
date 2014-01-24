@@ -51,37 +51,37 @@ namespace Plist
 		template<typename T>
 		void readPlist(std::istream& stream, T& message);
 		template<typename T>
-		void readPlist(const std::string& filename, T& message);
+		void readPlist(const char* filename, T& message);
 #if defined(_MSC_VER)
 		template<typename T>
-		void readPlist(const std::wstring& filename, T& message);
+		void readPlist(const wchar_t* filename, T& message);
 #endif
 
 		// Public binary write methods.
 
 		void writePlistBinary(std::ostream& stream, const boost::any& message);
 		void writePlistBinary(std::vector<char>& plist, const boost::any& message);
-		void writePlistBinary(const std::string& filename, const boost::any& message);
+		void writePlistBinary(const char* filename, const boost::any& message);
 #if defined(_MSC_VER)
-		void writePlistBinary(const std::wstring& filename, const boost::any& message);
+		void writePlistBinary(const wchar_t* filename, const boost::any& message);
 #endif
 
 		// Public XML write methods.
 
 		void writePlistXML(std::ostream& stream, const boost::any& message);
 		void writePlistXML(std::vector<char>& plist, const boost::any& message);
-		void writePlistXML(const std::string& filename, const boost::any& message);
+		void writePlistXML(const char* filename, const boost::any& message);
 #if defined(_MSC_VER)
-		void writePlistXML(const std::wstring& filename, const boost::any& message);
+		void writePlistXML(const wchar_t* filename, const boost::any& message);
 #endif
 
 };
 
 #if defined(_MSC_VER)
 template <typename T>
-void Plist::readPlist(const std::wstring& filename, T& message)
+void Plist::readPlist(const wchar_t* filename, T& message)
 {
-	std::ifstream stream(filename.c_str(), std::ios::binary);
+	std::ifstream stream(filename, std::ios::binary);
 	if(!stream)
 		throw std::runtime_error("Can't open file.");
 	readPlist(stream, message);
@@ -89,9 +89,9 @@ void Plist::readPlist(const std::wstring& filename, T& message)
 #endif
 
 template <typename T>
-void Plist::readPlist(const std::string& filename, T& message)
+void Plist::readPlist(const char* filename, T& message)
 {
-	std::ifstream stream(filename.c_str(), std::ios::binary);
+	std::ifstream stream(filename, std::ios::binary);
 	if(!stream)
 		throw std::runtime_error("Can't open file.");
 	readPlist(stream, message);

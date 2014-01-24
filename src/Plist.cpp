@@ -333,20 +333,20 @@ void Plist::writePlistBinary(
 }
 
 void Plist::writePlistBinary(
-				const std::string& filename, 
+				const char* filename,
 				const boost::any& message)
 {
-	std::ofstream stream(filename.c_str(), std::ios::binary);
+	std::ofstream stream(filename, std::ios::binary);
 	writePlistBinary(stream, message);
 	stream.close();
 }
 
 #if defined(_MSC_VER)
 void Plist::writePlistBinary(
-				const std::wstring& filename,
+				const wchar_t* filename,
 				const boost::any& message)
 {
-	std::ofstream stream(filename.c_str(), std::ios::binary);
+	std::ofstream stream(filename, std::ios::binary);
 	writePlistBinary(stream, message);
 	stream.close();
 }
@@ -373,21 +373,21 @@ void Plist::writePlistXML(
 }
 
 void Plist::writePlistXML(
-		const std::string& filename,
+		const char* filename,
 		const boost::any& message)
 {
 
-	std::ofstream stream(filename.c_str(), std::ios::binary);
+	std::ofstream stream(filename, std::ios::binary);
 	writePlistXML(stream, message);
 	stream.close();
 }
 
 #if defined(_MSC_VER)
 void Plist::writePlistXML(
-		const std::wstring& filename,
+		const wchar_t* filename,
 		const boost::any& message)
 {
-	std::ofstream stream(filename.c_str(), std::ios::binary);
+	std::ofstream stream(filename, std::ios::binary);
 	writePlistXML(stream, message);
 	stream.close();
 }
