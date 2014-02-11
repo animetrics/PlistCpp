@@ -27,6 +27,7 @@
 #define __PLIST_H__
 
 #include <boost/any.hpp>
+#include <boost/cstdint.hpp>
 #include <string>
 #include <vector>
 #include <map>
@@ -35,12 +36,18 @@
 #include <stdexcept>
 #include "PlistDate.hpp"
 
-#if defined(_WIN32) || defined(_WIN64)
-#include <stdint.h>
-#endif
-
 namespace Plist
 {
+		// Plist value types and their corresponding c++ types
+
+		typedef std::string                          string_type;
+		typedef int64_t                              integer_type;
+		typedef double                               real_type;
+		typedef std::map<std::string, boost::any>    dictionary_type;
+		typedef std::vector<boost::any>              array_type;
+		typedef Date                                 date_type;
+		typedef std::vector<char>                    data_type;
+		typedef bool                                 boolean_type;
 
 		// Public read methods.  Plist type (binary or xml) automatically detected.
 

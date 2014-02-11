@@ -26,6 +26,7 @@
 //   THE SOFTWARE.
 
 #include "PlistDate.hpp"
+#include "Plist.hpp" // Plist::Error
 #include <stdexcept>
 #include <stdio.h>
 
