@@ -64,9 +64,9 @@ namespace Plist {
 		{
 			return (vec.size() > 0) ? &vec[0] : 0;
 			// if(vec.size() > 0)
-			// 	return &vec[0];
+			//		return &vec[0];
 			// else
-			// 	throw Error("vecData trying to get pointer to empty std::vector");
+			//		throw Error("vecData trying to get pointer to empty std::vector");
 		}
 
 		template<typename T>
@@ -74,9 +74,9 @@ namespace Plist {
 		{
 			return (vec.size() > 0) ? &vec[0] : 0;
 			// if(vec.size() > 0)
-			// 	return &vec[0];
+			//		return &vec[0];
 			// else
-			// 	throw Error("vecData trying to get pointer to empty std::vector");
+			//		throw Error("vecData trying to get pointer to empty std::vector");
 		}
 
 		// xml helper functions
@@ -588,11 +588,11 @@ std::vector<unsigned char> writeBinaryDate(PlistHelperData& d, const Date& date)
 	std::vector<unsigned char> buffer;
 
 	// need to serialize as Apple epoch.
-	
+
 	double macTime = date.timeAsAppleEpoch();
 
 	buffer = doubleToBytes(macTime, false);
-	buffer.insert(buffer.begin(), 0x33); 
+	buffer.insert(buffer.begin(), 0x33);
 
 	d._objectTable.insert(d._objectTable.begin(), buffer.begin(), buffer.end());
 	return buffer;
@@ -606,7 +606,7 @@ std::vector<unsigned char> writeBinaryInteger(PlistHelperData& d, int64_t value,
 	// as 8 bytes if it is negative.   If it is not negative, the
 	// regulateNullBytes step will reduce the representation down to the min
 	// power base 2 bytes needed to store it.
-	
+
 	vector<unsigned char> buffer = intToBytes<int64_t>(value, hostLittleEndian());
 	buffer = regulateNullBytes(intToBytes<int64_t>(value, hostLittleEndian()), 1);
 	while(buffer.size() != pow(2., log((double) buffer.size()) / log(2.)))
@@ -650,7 +650,7 @@ std::vector<unsigned char> writeBinaryString(PlistHelperData& d, const std::stri
 	d._objectTable.insert(d._objectTable.begin(), buffer.begin(), buffer.end());
 
 	return buffer;
-}	
+}
 
 int countDictionary(const dictionary_type& dictionary)
 {
@@ -708,7 +708,7 @@ void readPlist(const char* byteArrayTemp, int64_t size, boost::any& message)
 
 	// infer plist type from header.  If it has the bplist00 header as first 8
 	// bytes, then it's a binary plist.  Otherwise, assume it's XML
-	
+
 	std::string magicHeader((const char*) byteArray, 8);
 	if(magicHeader == "bplist00")
 	{
@@ -753,7 +753,7 @@ dictionary_type parseDictionary(pugi::xml_node& node)
 		else if(string("key") == it->name())
 			throw Error("Plist: XML dictionary value expected for key " + key + "but found another key node");
 
-		dict[key] = parse(*it); 
+		dict[key] = parse(*it);
 	}
 
 	return dict;
@@ -786,7 +786,7 @@ std::vector<char> base64Decode(const char* encodedData)
 	insert_iterator<vector<char> > ii(data, data.begin());
 	base64<char> b64;
 	int state = 0;
-	b64.get(encodedData, encodedData + strlen(encodedData), ii, state); 
+	b64.get(encodedData, encodedData + strlen(encodedData), ii, state);
 
 	return data;
 }
@@ -812,7 +812,7 @@ boost::any parse(pugi::xml_node& node)
 	using namespace std;
 
 	string nodeName = node.name();
-	
+
 	boost::any result;
 	if("dict" == nodeName)
 		result = parseDictionary(node);
@@ -834,7 +834,7 @@ boost::any parse(pugi::xml_node& node)
 		result = parseDate(node);
 	else
 		throw Error(string("Plist: XML unknown node type " + nodeName));
-		
+
 	return result;
 }
 
@@ -857,8 +857,8 @@ void parseTrailer(PlistHelperData& d, const std::vector<unsigned char>& trailer)
 
 	std::vector<unsigned char> refCountBytes = getRange(trailer, 12, 4);
 //	std::reverse(refCountBytes.begin(), refCountBytes.end());
-	d._refCount = bytesToInt<int32_t>(vecData(refCountBytes), false); 
-	
+	d._refCount = bytesToInt<int32_t>(vecData(refCountBytes), false);
+
 	std::vector<unsigned char> offsetTableOffsetBytes = getRange(trailer, 24, 8);
 //	std::reverse(offsetTableOffsetBytes.begin(), offsetTableOffsetBytes.end());
 	d._offsetTableOffset = bytesToInt<int64_t>(vecData(offsetTableOffsetBytes), false);
@@ -1048,7 +1048,7 @@ bool parseBinaryBool(const PlistHelperData& d, int headerPosition)
 	else if (header == 0x00)
 	{
 		// null byte, not sure yet what to do with this.  It's in the spec but we
-		// have never encountered it. 
+		// have never encountered it.
 
 		throw Error("Plist: null byte encountered, unsure how to parse");
 	}
@@ -1076,7 +1076,7 @@ Date parseBinaryDate(const PlistHelperData& d, int headerPosition)
 
 	Date date;
 
-	// Date is stored as Apple Epoch and big endian. 
+	// Date is stored as Apple Epoch and big endian.
 	date.setTimeFromAppleEpoch(bytesToDouble(vecData(buffer), false));
 
 	return date;

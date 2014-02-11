@@ -52,7 +52,7 @@ void Date::set(int month, int day, int year, int hour24, int minute, int second,
 	tmTime.tm_mon = month - 1;
 	tmTime.tm_min = minute;
 
-	//get proper day light savings. 
+	//get proper day light savings.
 
 	time_t loc = time(NULL);
 	struct tm tmLoc = *localtime(&loc);
@@ -69,7 +69,7 @@ void Date::set(int month, int day, int year, int hour24, int minute, int second,
 			throw Error("Plist::Date::set() date invalid");
 
 		// don't have timegm for all systems so here's a portable way to do it.
-		
+
 		struct tm tmTimeTemp;
 #if defined(_WIN32) || defined(_WIN64)
 		gmtime_s(&tmTimeTemp, &_time);
