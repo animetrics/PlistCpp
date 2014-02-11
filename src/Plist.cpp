@@ -27,7 +27,6 @@
 #include <boost/locale/encoding_utf.hpp>
 #include <list>
 #include <sstream>
-#include <math.h>
 #include "base64.hpp"
 #include "pugixml.hpp"
 
@@ -433,6 +432,25 @@ std::vector<unsigned char> writeBinary(PlistHelperData& d, const boost::any& obj
 	return value;
 }
 
+static uint32_t nextpow2(uint32_t x)
+{
+    --x;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    return x + 1;
+}
+
+static uint32_t ilog2(uint32_t x)
+{
+	uint32_t r = 0;
+	while (x >>= 1)
+		++r;
+	return r;
+}
+
 std::vector<unsigned char> writeBinaryByteArray(PlistHelperData& d, const data_type& byteArray)
 {
 	using namespace std;
@@ -559,10 +577,9 @@ std::vector<unsigned char> writeBinaryDouble(PlistHelperData& d, double value)
 {
 	using namespace std;
 	vector<unsigned char> buffer = regulateNullBytes(doubleToBytes(value, hostLittleEndian()), 4);
-	while(buffer.size() != pow(2., log((double) buffer.size()) / log(2.)))
-		buffer.push_back(0);
+	buffer.resize(nextpow2(buffer.size()), 0);
 
-	unsigned char header = 0x20 | (int)(log((double) buffer.size()) / log(2.));
+	unsigned char header = 0x20 | ilog2(buffer.size());
 	buffer.push_back(header);
 	reverse(buffer.begin(), buffer.end());
 
@@ -609,10 +626,9 @@ std::vector<unsigned char> writeBinaryInteger(PlistHelperData& d, int64_t value,
 
 	vector<unsigned char> buffer = intToBytes<int64_t>(value, hostLittleEndian());
 	buffer = regulateNullBytes(intToBytes<int64_t>(value, hostLittleEndian()), 1);
-	while(buffer.size() != pow(2., log((double) buffer.size()) / log(2.)))
-		buffer.push_back(0);
+	buffer.resize(nextpow2(buffer.size()), 0);
 
-	unsigned char header = 0x10 | (int)(log((double) buffer.size()) / log(2.));
+	unsigned char header = 0x10 | ilog2(buffer.size());
 	buffer.push_back(header);
 	reverse(buffer.begin(), buffer.end());
 
@@ -1020,7 +1036,7 @@ std::string parseBinaryUnicode(const PlistHelperData& d, int headerPosition)
 int64_t parseBinaryInt(const PlistHelperData& d, int headerPosition, int& intByteCount)
 {
 	unsigned char header = d._objectTable[headerPosition];
-	intByteCount = (int)pow(2., header & 0xf);
+	intByteCount = 1 << (header & 0xf);
 	std::vector<unsigned char> buffer = getRange(d._objectTable, headerPosition + 1, intByteCount);
 	reverse(buffer.begin(), buffer.end());
 
@@ -1030,7 +1046,7 @@ int64_t parseBinaryInt(const PlistHelperData& d, int headerPosition, int& intByt
 double parseBinaryReal(const PlistHelperData& d, int headerPosition)
 {
 	unsigned char header = d._objectTable[headerPosition];
-	int byteCount = (int)pow(2., header & 0xf);
+	int byteCount = 1 << (header & 0xf);
 	std::vector<unsigned char> buffer = getRange(d._objectTable, headerPosition + 1, byteCount);
 	reverse(buffer.begin(), buffer.end());
 
