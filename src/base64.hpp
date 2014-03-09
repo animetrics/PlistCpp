@@ -357,25 +357,25 @@ public:
 	}
 
 protected:
-	
-	int _getCharType(int _C) const
+
+	int _getCharType(int C) const
 	{
-		if(_base64Chars[62] == _C)
+		if(_base64Chars[62] == C)
 			return 62;
 
-		if(_base64Chars[63] == _C)
+		if(_base64Chars[63] == C)
 			return 63;
 
-		if((_base64Chars[0] <= _C) && (_base64Chars[25] >= _C))
-			return _C - _base64Chars[0];
+		if((_base64Chars[0] <= C) && (_base64Chars[25] >= C))
+			return C - _base64Chars[0];
 
-		if((_base64Chars[26] <= _C) && (_base64Chars[51] >= _C))
-			return _C - _base64Chars[26] + 26;
+		if((_base64Chars[26] <= C) && (_base64Chars[51] >= C))
+			return C - _base64Chars[26] + 26;
 
-		if((_base64Chars[52] <= _C) && (_base64Chars[61] >= _C))
-			return _C - _base64Chars[52] + 52;
+		if((_base64Chars[52] <= C) && (_base64Chars[61] >= C))
+			return C - _base64Chars[52] + 52;
 
-		if(_C == _Tr::to_int_type('='))
+		if(C == _Tr::to_int_type('='))
 			return _EQUAL_CHAR;
 
 		return _UNKNOWN_CHAR;
