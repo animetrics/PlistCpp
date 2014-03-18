@@ -12243,5 +12243,7 @@
 	<integer>-3455</integer>
 	<key>testString</key>
 	<string>hello there</string>
+	<key>testEmptyString</key>
+	<string></string>
 </dict>
 </plist>

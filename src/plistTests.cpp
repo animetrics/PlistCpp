@@ -45,6 +45,7 @@ static void createMessage(map<string, boost::any>& dict)
 		array[1] = string("string item in array");
 		dict["testArray"] = array;
 		dict["testString"] = string("hello there");
+		dict["testEmptyString"] = string("");
 
 		map<string, boost::any> innerDict;
 		innerDict["test string"] = string("inner dict item");
@@ -72,6 +73,7 @@ static void createMessage(map<string, boost::any>& dict)
 static void checkDictionary(const map<string, boost::any>& dict)
 {
 		string actualString = "hello there";
+		string actualEmptyString = "";
 		double actualDouble = 1.34223;
 		int actualInt = -3455;
 
@@ -164,6 +166,12 @@ static void checkDictionary(const map<string, boost::any>& dict)
 		cout<<"                            done."<<endl;
 #endif
 
+		// checking empty string
+		
+		CHECK_ARRAY_EQUAL(actualEmptyString.c_str(),  boost::any_cast<const string&>(dict.find("testEmptyString")->second).c_str(), actualEmptyString.size());
+#ifdef TEST_VERBOSE
+		cout<<"                            done."<<endl;
+#endif
 
 		// checking array
 #ifdef TEST_VERBOSE
@@ -393,11 +401,11 @@ SUITE(PLIST_TESTS)
 		CHECK_EQUAL(100, seconds);
 	}
 
-	TEST(UNICODE)
-	{
-		map<string, boost::any> dict;
-		Plist::readPlist("binaryExampleUnicode.plist", dict);
-	}
+//	TEST(UNICODE)
+//	{
+//		map<string, boost::any> dict;
+//		Plist::readPlist("binaryExampleUnicode.plist", dict);
+//	}
 
 }
 
