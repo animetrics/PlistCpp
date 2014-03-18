@@ -393,5 +393,11 @@ SUITE(PLIST_TESTS)
 		CHECK_EQUAL(100, seconds);
 	}
 
+	TEST(UNICODE)
+	{
+		map<string, boost::any> dict;
+		Plist::readPlist("binaryExampleUnicode.plist", dict);
+	}
+
 }
 
