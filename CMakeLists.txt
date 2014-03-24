@@ -10,7 +10,7 @@ IF(APPLE)
 	# on Mavericks, need to link to libstdc++ directly because libc++ is default
 	# and won't work
 	if(NOT ${CMAKE_SYSTEM_VERSION} VERSION_LESS 13.0)
-		set(EXTRA_CXX_FLAGS "stdlib=libstdc++")
+		set(EXTRA_CXX_FLAGS "-stdlib=libstdc++")
 		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lstdc++")
 		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lstdc++")
 	endif()
