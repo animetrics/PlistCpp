@@ -51,19 +51,28 @@ void Date::set(int month, int day, int year, int hour24, int minute, int second,
 	tmTime.tm_sec = second;
 	tmTime.tm_mon = month - 1;
 	tmTime.tm_min = minute;
-
-	//get proper day light savings.
-
-	time_t loc = time(NULL);
-	struct tm tmLoc = *localtime(&loc);
-	//std::cout<<"tmLoc.tm_isdst = "<<tmLoc.tm_isdst<<std::endl;
-	tmTime.tm_isdst = tmLoc.tm_isdst;
+	tmTime.tm_wday = -1;
+	tmTime.tm_yday = -1;
+	tmTime.tm_isdst = -1; // Not DST conversion when UTC.
 
 	if(UTC)
 	{
 		//_time = timegm(&tmTime);
 
 		tmTime.tm_isdst = 0;
+		_time = mktime(&tmTime);
+		if(_time < -1)
+			throw Error("Plist::Date::set() date invalid");
+	}
+	else
+	{
+		//get proper day light savings.
+
+		time_t loc = time(NULL);
+		struct tm tmLoc = *localtime(&loc);
+		//std::cout<<"tmLoc.tm_isdst = "<<tmLoc.tm_isdst<<std::endl;
+		tmTime.tm_isdst = tmLoc.tm_isdst;
+
 		_time = mktime(&tmTime);
 		if(_time < -1)
 			throw Error("Plist::Date::set() date invalid");
@@ -81,12 +90,6 @@ void Date::set(int month, int day, int year, int hour24, int minute, int second,
 
 		time_t diff = _time - timeTemp;
 		_time += diff;
-	}
-	else
-	{
-		_time = mktime(&tmTime);
-		if(_time < -1)
-			throw Error("Plist::Date::set() date invalid");
 	}
 }
 
