@@ -59,7 +59,6 @@ void Date::set(int month, int day, int year, int hour24, int minute, int second,
 	{
 		//_time = timegm(&tmTime);
 
-		tmTime.tm_isdst = 0;
 		_time = mktime(&tmTime);
 		if(_time < -1)
 			throw Error("Plist::Date::set() date invalid");
