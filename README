@@ -8,7 +8,7 @@ be cross platform with minimal dependencies.  The interface is simply a set of
 static methods which serialize a subset of stdlib containers to plists (as well
 as the inverse operation of deserializing plists into stdlib containers).
 
-It uses boost::any as a generic type in order to support heterogenous
+It uses std::any as a generic type in order to support heterogenous
 containers, e.g. a dictionary is a map<string, any> and an array is a
 vector<any>.  The supported stdlib containers and their associations to plist
 types is shown below. 
@@ -19,8 +19,8 @@ ________________________________________________________________________________
 string          std::string 
 integer         short, int, long, int32_t, int64_t (always deserializes as int64_t)
 real            double, float (always deserializes as double)
-dictionary      std::map<std::string, boost::any>
-array           std::vector<boost::any>
+dictionary      std::map<std::string, std::any>
+array           std::vector<std::any>
 date            PlistDate (included class in PlistDate.hpp)
 data            std::vector<char>
 boolean         bool
@@ -33,7 +33,7 @@ See src/plistTests.cpp for examples of reading and writing all types to both
 XML and binary.  E.g. to read a plist from disk whose root node is a
 dictionary:
 
-		map<string, boost::any> dict; 
+		map<string, std::any> dict; 
 		Plist::readPlist("binaryExample1.plist", dict);
 
 The plist format (binary or XML) is automatically detected so call the same
@@ -43,7 +43,7 @@ readPlist method for XML
 
 To write a plist, e.g. dictionary
 
-		map<string, boost::any> dict;
+		map<string, std::any> dict;
 		populateDictionary(dict);
 		Plist::writePlistXML("xmlExampleWritten.plist", dict);
 
