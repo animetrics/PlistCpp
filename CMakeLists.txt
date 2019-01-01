@@ -8,9 +8,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${EXTRA_CXX_FLAGS} -Wall -DT
 
 set(SCRIPT_EXT sh)
 set(MY_BUILD_TYPE ${CMAKE_BUILD_TYPE})
-set(ARCH_DIR "build")
+set(ARCH_DIR ".")
 if(APPLE)
-	set(ARCH_DIR OSX)
 	# on Mavericks, need to link to libstdc++ directly because libc++ is default
 	# and won't work
 	if(NOT ${CMAKE_SYSTEM_VERSION} VERSION_LESS 13.0)
@@ -20,10 +19,8 @@ if(APPLE)
 	endif()
 elseif(MSVC)
 	set(MY_BUILD_TYPE "\$(Configuration)")
-	set(ARCH_DIR "build\\${MY_BUILD_TYPE}")
+	set(ARCH_DIR "${MY_BUILD_TYPE}")
 	set(SCRIPT_EXT bat)
-else()
-	set(ARCH_DIR Linux)
 endif()
 
 find_package(UnitTest++ REQUIRED)
