@@ -1029,9 +1029,9 @@ std::string parseBinaryUnicode(const PlistHelperData& d, int headerPosition)
 		}
 	}
 
-	const wchar_t *u16chars = reinterpret_cast<const wchar_t*>(vecData(characterBytes));
+	const int16_t *u16chars = reinterpret_cast<const int16_t*>(vecData(characterBytes));
 	std::size_t u16len = characterBytes.size() / 2;
-	return std::wstring_convert<std::codecvt_utf8_utf16<int16_t>>().to_bytes(u16chars, u16chars + u16len);
+	return std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t>().to_bytes(u16chars, u16chars + u16len);
 }
 
 int64_t parseBinaryInt(const PlistHelperData& d, int headerPosition, int& intByteCount)

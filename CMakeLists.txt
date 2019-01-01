@@ -6,10 +6,30 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${EXTRA_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${EXTRA_CXX_FLAGS} -Wall -DTEST_VERBOSE")
 
+set(SCRIPT_EXT sh)
+set(MY_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+if(APPLE)
+	set(ARCH_DIR OSX)
+	# on Mavericks, need to link to libstdc++ directly because libc++ is default
+	# and won't work
+	if(NOT ${CMAKE_SYSTEM_VERSION} VERSION_LESS 13.0)
+		set(EXTRA_CXX_FLAGS "-stdlib=libstdc++")
+		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lstdc++")
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lstdc++")
+	endif()
+elseif(MSVC)
+	set(ARCH_DIR "build\\Debug")
+	set(SCRIPT_EXT bat)
+	set(MY_BUILD_TYPE "\$(Configuration)")
+else()
+	set(ARCH_DIR Linux)
+endif()
+
 find_package(UnitTest++ REQUIRED)
 
 add_executable(runTests src/runTests.cpp src/plistTests.cpp src/pugixml.cpp src/Plist.cpp src/PlistDate.cpp)
 target_include_directories(runTests PUBLIC ${UTPP_INCLUDE_DIRS})
+target_link_libraries(runTests UnitTest++)
 add_dependencies(runTests UnitTest++)
 
 add_custom_command(
