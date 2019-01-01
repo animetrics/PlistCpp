@@ -24,9 +24,11 @@
 //   THE SOFTWARE.
 
 #include "Plist.hpp"
-#include <boost/locale/encoding_utf.hpp>
-#include <list>
 #include <sstream>
+#include <locale>
+#include <codecvt>
+#include <list>
+#include <algorithm>
 #include "base64.hpp"
 #include "pugixml.hpp"
 
@@ -48,11 +50,11 @@ namespace Plist {
 
 		void writePlistBinary(
 				PlistHelperData& d,
-				const boost::any& message);
+				const std::any& message);
 
 		void writePlistXML(
 				pugi::xml_document& doc,
-				const boost::any& message);
+				const std::any& message);
 
 		// helper functions
 
@@ -83,7 +85,7 @@ namespace Plist {
 		template<typename T>
 			std::string stringFromValue(const T& value);
 		template<typename T>
-			void writeXMLSimpleNode(pugi::xml_node& node, const char* name, const boost::any& obj);
+			void writeXMLSimpleNode(pugi::xml_node& node, const char* name, const std::any& obj);
 
 		// xml parsing
 
@@ -92,13 +94,13 @@ namespace Plist {
 		std::vector<char> base64Decode(const char* data);
 		void base64Encode(std::string& dataEncoded, const std::vector<char>& data);
 		Date parseDate(pugi::xml_node& node);
-		boost::any parse(pugi::xml_node& doc);
+		std::any parse(pugi::xml_node& doc);
 
 		// xml writing
 
 		void writeXMLArray(pugi::xml_node& node, const array_type& array);
 		void writeXMLDictionary(pugi::xml_node& node, const dictionary_type& message);
-		void writeXMLNode(pugi::xml_node& node, const boost::any& obj);
+		void writeXMLNode(pugi::xml_node& node, const std::any& obj);
 
 		// binary helper functions
 
@@ -114,7 +116,7 @@ namespace Plist {
 
 		// binary parsing
 
-		boost::any parseBinary(const PlistHelperData& d, int objRef);
+		std::any parseBinary(const PlistHelperData& d, int objRef);
 		dictionary_type  parseBinaryDictionary(const PlistHelperData& d, int objRef);
 		array_type  parseBinaryArray(const PlistHelperData& d, int objRef);
 		std::vector<int32_t> getRefsForContainers(const PlistHelperData& d, int objRef);
@@ -132,7 +134,7 @@ namespace Plist {
 
 		// binary writing
 
-		int countAny(const boost::any& object);
+		int countAny(const std::any& object);
 		int countDictionary(const dictionary_type& dictionary);
 		int countArray(const array_type& array);
 		std::vector<unsigned char> writeBinaryDictionary(PlistHelperData& d, const dictionary_type& dictionary);
@@ -142,7 +144,7 @@ namespace Plist {
 		std::vector<unsigned char> writeBinaryBool(PlistHelperData& d, bool value);
 		std::vector<unsigned char> writeBinaryDate(PlistHelperData& d, const Date& date);
 		std::vector<unsigned char> writeBinaryDouble(PlistHelperData& d, double value);
-		std::vector<unsigned char> writeBinary(PlistHelperData& d, const boost::any& obj);
+		std::vector<unsigned char> writeBinary(PlistHelperData& d, const std::any& obj);
 		std::vector<unsigned char> writeBinaryString(PlistHelperData& d, const std::string& value, bool head);
 
 		inline bool hostLittleEndian()
@@ -157,14 +159,14 @@ namespace Plist {
 namespace Plist {
 
 template<typename T>
-void writeXMLSimpleNode(pugi::xml_node& node, const char* name, const boost::any& obj)
+void writeXMLSimpleNode(pugi::xml_node& node, const char* name, const std::any& obj)
 {
 	pugi::xml_node newNode;
 	newNode = node.append_child(name);
-	newNode.append_child(pugi::node_pcdata).set_value(stringFromValue(boost::any_cast<const T&>(obj)).c_str());
+	newNode.append_child(pugi::node_pcdata).set_value(stringFromValue(std::any_cast<const T&>(obj)).c_str());
 }
 
-void writeXMLNode(pugi::xml_node& node, const boost::any& obj)
+void writeXMLNode(pugi::xml_node& node, const std::any& obj)
 {
 	using namespace std;
 
@@ -179,15 +181,15 @@ void writeXMLNode(pugi::xml_node& node, const boost::any& obj)
 	else if(objType == typeid(short))
 		writeXMLSimpleNode<short>(node, "integer", obj);
 	else if(objType == typeid(dictionary_type))
-		writeXMLDictionary(node, boost::any_cast<const dictionary_type&>(obj));
+		writeXMLDictionary(node, std::any_cast<const dictionary_type&>(obj));
 	else if(objType == typeid(string_type))
 		writeXMLSimpleNode<string_type>(node, "string", obj);
 	else if(objType == typeid(array_type))
-		writeXMLArray(node, boost::any_cast<const array_type&>(obj));
+		writeXMLArray(node, std::any_cast<const array_type&>(obj));
 	else if(objType == typeid(data_type))
 	{
 		string dataEncoded;
-		base64Encode(dataEncoded, boost::any_cast<const data_type&>(obj));
+		base64Encode(dataEncoded, std::any_cast<const data_type&>(obj));
 		writeXMLSimpleNode<string>(node, "data", dataEncoded);
 	}
 	else if(objType == typeid(double))
@@ -195,10 +197,10 @@ void writeXMLNode(pugi::xml_node& node, const boost::any& obj)
 	else if(objType == typeid(float))
 		writeXMLSimpleNode<float>(node, "real", obj);
 	else if(objType == typeid(Date))
-		writeXMLSimpleNode<string>(node, "date", boost::any_cast<const Date&>(obj).timeAsXMLConvention());
+		writeXMLSimpleNode<string>(node, "date", std::any_cast<const Date&>(obj).timeAsXMLConvention());
 	else if(objType == typeid(bool))
 	{
-		bool value = boost::any_cast<const bool&>(obj);
+		bool value = std::any_cast<const bool&>(obj);
 		node.append_child(value ? "true" : "false");
 	}
 	else
@@ -236,7 +238,7 @@ void writeXMLDictionary(
 
 void writePlistXML(
 		pugi::xml_document& doc,
-		const boost::any& message)
+		const std::any& message)
 //		const dictionary_type& message)
 {
 
@@ -257,7 +259,7 @@ void writePlistXML(
 
 void writePlistBinary(
 		PlistHelperData& d,
-		const boost::any& message)
+		const std::any& message)
 {
 	using namespace std;
 	//int totalRefs =  countDictionary(message);
@@ -300,7 +302,7 @@ void writePlistBinary(
 	d._objectTable.insert(d._objectTable.end(), temp.rbegin(), temp.rend());
 }
 
-void writePlistBinary(std::vector<char>& plist, const boost::any& message)
+void writePlistBinary(std::vector<char>& plist, const std::any& message)
 {
 	PlistHelperData d;
 	writePlistBinary(d, message);
@@ -310,7 +312,7 @@ void writePlistBinary(std::vector<char>& plist, const boost::any& message)
 
 void writePlistBinary(
 		std::ostream& stream,
-		const boost::any& message)
+		const std::any& message)
 {
 	PlistHelperData d;
 	writePlistBinary(d, message);
@@ -319,7 +321,7 @@ void writePlistBinary(
 
 void writePlistBinary(
 				const char* filename,
-				const boost::any& message)
+				const std::any& message)
 {
 	std::ofstream stream(filename, std::ios::binary);
 	writePlistBinary(stream, message);
@@ -329,7 +331,7 @@ void writePlistBinary(
 #if defined(_MSC_VER)
 void writePlistBinary(
 				const wchar_t* filename,
-				const boost::any& message)
+				const std::any& message)
 {
 	std::ofstream stream(filename, std::ios::binary);
 	writePlistBinary(stream, message);
@@ -337,7 +339,7 @@ void writePlistBinary(
 }
 #endif
 
-void writePlistXML(std::vector<char>& plist, const boost::any& message)
+void writePlistXML(std::vector<char>& plist, const std::any& message)
 {
 	std::stringstream ss;
 	writePlistXML(ss, message);
@@ -350,7 +352,7 @@ void writePlistXML(std::vector<char>& plist, const boost::any& message)
 
 void writePlistXML(
 		std::ostream& stream,
-		const boost::any& message)
+		const std::any& message)
 {
 	pugi::xml_document doc;
 	writePlistXML(doc, message);
@@ -359,7 +361,7 @@ void writePlistXML(
 
 void writePlistXML(
 		const char* filename,
-		const boost::any& message)
+		const std::any& message)
 {
 
 	std::ofstream stream(filename, std::ios::binary);
@@ -370,7 +372,7 @@ void writePlistXML(
 #if defined(_MSC_VER)
 void writePlistXML(
 		const wchar_t* filename,
-		const boost::any& message)
+		const std::any& message)
 {
 	std::ofstream stream(filename, std::ios::binary);
 	writePlistXML(stream, message);
@@ -378,24 +380,24 @@ void writePlistXML(
 }
 #endif
 
-int countAny(const boost::any& object)
+int countAny(const std::any& object)
 {
 	using namespace std;
-	static boost::any dict = dictionary_type();
-	static boost::any array = array_type();
+	static std::any dict = dictionary_type();
+	static std::any array = array_type();
 
 	int count = 0;
 	if(object.type() == dict.type())
-		count += countDictionary(boost::any_cast<dictionary_type >(object)) + 1;
+		count += countDictionary(std::any_cast<dictionary_type >(object)) + 1;
 	else if (object.type() == array.type())
-		count += countArray(boost::any_cast<array_type >(object)) + 1;
+		count += countArray(std::any_cast<array_type >(object)) + 1;
 	else
 		++count;
 
 	return count;
 }
 
-std::vector<unsigned char> writeBinary(PlistHelperData& d, const boost::any& obj)
+std::vector<unsigned char> writeBinary(PlistHelperData& d, const std::any& obj)
 {
 	using namespace std;
 
@@ -403,29 +405,29 @@ std::vector<unsigned char> writeBinary(PlistHelperData& d, const boost::any& obj
 
 	std::vector<unsigned char> value;
 	if(objType == typeid(int32_t))
-		value = writeBinaryInteger(d, boost::any_cast<const int32_t&>(obj), true);
+		value = writeBinaryInteger(d, std::any_cast<const int32_t&>(obj), true);
 	else if(objType == typeid(int64_t))
-		value = writeBinaryInteger(d, boost::any_cast<const int64_t&>(obj), true);
+		value = writeBinaryInteger(d, std::any_cast<const int64_t&>(obj), true);
 	else if(objType == typeid(long))
-		value = writeBinaryInteger(d, boost::any_cast<const long&>(obj), true);
+		value = writeBinaryInteger(d, std::any_cast<const long&>(obj), true);
 	else if(objType == typeid(short))
-		value = writeBinaryInteger(d, boost::any_cast<const short&>(obj), true);
+		value = writeBinaryInteger(d, std::any_cast<const short&>(obj), true);
 	else if(objType == typeid(dictionary_type))
-		value = writeBinaryDictionary(d, boost::any_cast<const dictionary_type& >(obj));
+		value = writeBinaryDictionary(d, std::any_cast<const dictionary_type& >(obj));
 	else if(objType == typeid(string))
-		value = writeBinaryString(d, boost::any_cast<const string&>(obj), true);
+		value = writeBinaryString(d, std::any_cast<const string&>(obj), true);
 	else if(objType == typeid(array_type))
-		value = writeBinaryArray(d, boost::any_cast<const array_type& >(obj));
+		value = writeBinaryArray(d, std::any_cast<const array_type& >(obj));
 	else if(objType == typeid(data_type))
-		value = writeBinaryByteArray(d, boost::any_cast<const data_type& >(obj));
+		value = writeBinaryByteArray(d, std::any_cast<const data_type& >(obj));
 	else if(objType == typeid(double))
-		value = writeBinaryDouble(d, boost::any_cast<const double&>(obj));
+		value = writeBinaryDouble(d, std::any_cast<const double&>(obj));
 	else if(objType == typeid(float))
-		value = writeBinaryDouble(d, boost::any_cast<const float&>(obj));
+		value = writeBinaryDouble(d, std::any_cast<const float&>(obj));
 	else if(objType == typeid(Date))
-		value = writeBinaryDate(d, boost::any_cast<const Date&>(obj));
+		value = writeBinaryDate(d, std::any_cast<const Date&>(obj));
 	else if(objType == typeid(bool))
-		value = writeBinaryBool(d, boost::any_cast<const bool&>(obj));
+		value = writeBinaryBool(d, std::any_cast<const bool&>(obj));
 	else
 		throw Error((string("Plist Error: Can't serialize type ") + objType.name()).c_str());
 
@@ -696,7 +698,7 @@ int countArray(const array_type& array)
 	return count;
 }
 
-void readPlist(std::istream& stream, boost::any& message)
+void readPlist(std::istream& stream, std::any& message)
 {
 	int start = stream.tellg();
 	stream.seekg(0, std::ifstream::end);
@@ -715,7 +717,7 @@ void readPlist(std::istream& stream, boost::any& message)
 	}
 }
 
-void readPlist(const char* byteArrayTemp, int64_t size, boost::any& message)
+void readPlist(const char* byteArrayTemp, int64_t size, std::any& message)
 {
 	using namespace std;
 	const unsigned char* byteArray = (const unsigned char*) byteArrayTemp;
@@ -823,13 +825,13 @@ void base64Encode(std::string& dataEncoded, const std::vector<char>& data)
 
 }
 
-boost::any parse(pugi::xml_node& node)
+std::any parse(pugi::xml_node& node)
 {
 	using namespace std;
 
 	string nodeName = node.name();
 
-	boost::any result;
+	std::any result;
 	if("dict" == nodeName)
 		result = parseDictionary(node);
 	else if("array" == nodeName)
@@ -894,7 +896,7 @@ std::vector<unsigned char> regulateNullBytes(const std::vector<unsigned char>& o
 	return bytes;
 }
 
-boost::any parseBinary(const PlistHelperData& d, int objRef)
+std::any parseBinary(const PlistHelperData& d, int objRef)
 {
 	unsigned char header = d._objectTable[d._offsetTable[objRef]];
 	switch (header & 0xF0)
@@ -984,14 +986,14 @@ dictionary_type parseBinaryDictionary(const PlistHelperData& d, int objRef)
 	dictionary_type dict;
 	for (int i = 0; i < refCount; i++)
 	{
-		boost::any keyAny = parseBinary(d, refs[i]);
+		std::any keyAny = parseBinary(d, refs[i]);
 
 		try
 		{
-			std::string& key = boost::any_cast<std::string&>(keyAny);
+			std::string& key = std::any_cast<std::string&>(keyAny);
 			dict[key] =  parseBinary(d, refs[i + refCount]);
 		}
-		catch(boost::bad_any_cast& )
+		catch(std::bad_any_cast& )
 		{
 			throw Error("Error parsing dictionary.  Key can't be parsed as a string");
 		}
@@ -1027,10 +1029,9 @@ std::string parseBinaryUnicode(const PlistHelperData& d, int headerPosition)
 		}
 	}
 
-	int16_t *u16chars = (int16_t*) vecData(characterBytes);
+	const wchar_t *u16chars = reinterpret_cast<const wchar_t*>(vecData(characterBytes));
 	std::size_t u16len = characterBytes.size() / 2;
-	std::string result = boost::locale::conv::utf_to_utf<char, int16_t>(u16chars, u16chars + u16len, boost::locale::conv::stop);
-	return result;
+	return std::wstring_convert<std::codecvt_utf8_utf16<int16_t>>().to_bytes(u16chars, u16chars + u16len);
 }
 
 int64_t parseBinaryInt(const PlistHelperData& d, int headerPosition, int& intByteCount)
