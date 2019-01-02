@@ -25,7 +25,7 @@
 
 #include "Plist.hpp"
 #include <sstream>
-#include <locale>
+#include <boost/locale/encoding_utf.hpp>
 #include <codecvt>
 #include <list>
 #include <algorithm>
@@ -1031,7 +1031,7 @@ std::string parseBinaryUnicode(const PlistHelperData& d, int headerPosition)
 
 	const int16_t *u16chars = reinterpret_cast<const int16_t*>(vecData(characterBytes));
 	std::size_t u16len = characterBytes.size() / 2;
-	return std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t>().to_bytes(u16chars, u16chars + u16len);
+	return boost::locale::conv::utf_to_utf<char, int16_t>(u16chars, u16chars + u16len, boost::locale::conv::stop);
 }
 
 int64_t parseBinaryInt(const PlistHelperData& d, int headerPosition, int& intByteCount)

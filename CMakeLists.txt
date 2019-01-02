@@ -23,10 +23,11 @@ elseif(MSVC)
 	set(SCRIPT_EXT bat)
 endif()
 
+find_package(Boost REQUIRED)
 find_package(UnitTest++ REQUIRED)
 
 add_executable(runTests src/runTests.cpp src/plistTests.cpp src/pugixml.cpp src/Plist.cpp src/PlistDate.cpp)
-target_include_directories(runTests PUBLIC ${UTPP_INCLUDE_DIRS})
+target_include_directories(runTests PUBLIC ${UTPP_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 target_link_libraries(runTests UnitTest++)
 add_dependencies(runTests UnitTest++)
 
