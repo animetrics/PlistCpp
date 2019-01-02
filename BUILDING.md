@@ -4,6 +4,7 @@
 In order to build this project, you need to have the following libraries installed:
 
 * [UnitTest++](https://github.com/unittest-cpp/unittest-cpp)
+* [Boost](https://www.boost.org)
 
 On macOS this can conveniently be done through [Homebrew](https://brew.sh):
 
