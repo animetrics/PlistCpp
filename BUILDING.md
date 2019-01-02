@@ -18,4 +18,5 @@ Or using [vcpkg](https://github.com/Microsoft/vcpkg):
 * `mkdir build && cd build`
 * `cmake ..`
     * If you use `vcpkg`, add the flag `-DCMAKE_TOOLCHAIN_FILE=[path/to/vcpkg]/scripts/buildsystems/vcpkg.cmake`
+* `cd ..`
 * `cmake --build build`
