@@ -23,7 +23,7 @@ elseif(MSVC)
 	set(SCRIPT_EXT bat)
 endif()
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS locale)
 find_package(UnitTest++ REQUIRED)
 
 add_executable(runTests src/runTests.cpp src/plistTests.cpp src/pugixml.cpp src/Plist.cpp src/PlistDate.cpp)
