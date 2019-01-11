@@ -8,7 +8,7 @@ In order to build this project, you need to have the following libraries install
 
 On macOS this can conveniently be done through [Homebrew](https://brew.sh):
 
-* `brew install unittest-cpp`
+* `brew install boost unittest-cpp`
 
 Or using [vcpkg](https://github.com/Microsoft/vcpkg):
 
