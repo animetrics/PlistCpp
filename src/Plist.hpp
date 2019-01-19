@@ -26,8 +26,8 @@
 #ifndef __PLIST_H__
 #define __PLIST_H__
 
-#include <boost/any.hpp>
-#include <boost/cstdint.hpp>
+#include <any>
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <map>
@@ -43,16 +43,16 @@ namespace Plist
 		typedef std::string                          string_type;
 		typedef int64_t                              integer_type;
 		typedef double                               real_type;
-		typedef std::map<std::string, boost::any>    dictionary_type;
-		typedef std::vector<boost::any>              array_type;
+		typedef std::map<std::string, std::any>      dictionary_type;
+		typedef std::vector<std::any>                array_type;
 		typedef Date                                 date_type;
 		typedef std::vector<char>                    data_type;
 		typedef bool                                 boolean_type;
 
 		// Public read methods.  Plist type (binary or xml) automatically detected.
 
-		void readPlist(const char* byteArrayTemp, int64_t size, boost::any& message);
-		void readPlist(std::istream& stream, boost::any& message);
+		void readPlist(const char* byteArrayTemp, int64_t size, std::any& message);
+		void readPlist(std::istream& stream, std::any& message);
 		template<typename T>
 		void readPlist(const char* byteArray, int64_t size, T& message);
 		template<typename T>
@@ -66,20 +66,20 @@ namespace Plist
 
 		// Public binary write methods.
 
-		void writePlistBinary(std::ostream& stream, const boost::any& message);
-		void writePlistBinary(std::vector<char>& plist, const boost::any& message);
-		void writePlistBinary(const char* filename, const boost::any& message);
+		void writePlistBinary(std::ostream& stream, const std::any& message);
+		void writePlistBinary(std::vector<char>& plist, const std::any& message);
+		void writePlistBinary(const char* filename, const std::any& message);
 #if defined(_MSC_VER)
-		void writePlistBinary(const wchar_t* filename, const boost::any& message);
+		void writePlistBinary(const wchar_t* filename, const std::any& message);
 #endif
 
 		// Public XML write methods.
 
-		void writePlistXML(std::ostream& stream, const boost::any& message);
-		void writePlistXML(std::vector<char>& plist, const boost::any& message);
-		void writePlistXML(const char* filename, const boost::any& message);
+		void writePlistXML(std::ostream& stream, const std::any& message);
+		void writePlistXML(std::vector<char>& plist, const std::any& message);
+		void writePlistXML(const char* filename, const std::any& message);
 #if defined(_MSC_VER)
-		void writePlistXML(const wchar_t* filename, const boost::any& message);
+		void writePlistXML(const wchar_t* filename, const std::any& message);
 #endif
 
 		class Error: public std::runtime_error {
@@ -116,17 +116,17 @@ void Plist::readPlist(const char* filename, T& message)
 template <typename T>
 void Plist::readPlist(const char* byteArrayTemp, int64_t size, T& message)
 {
-	boost::any tmp_message;
+	std::any tmp_message;
 	readPlist(byteArrayTemp, size, tmp_message);
-	message = boost::any_cast<T>(tmp_message);
+	message = std::any_cast<T>(tmp_message);
 }
 
 template <typename T>
 void Plist::readPlist(std::istream& stream, T& message)
 {
-	boost::any tmp_message;
+	std::any tmp_message;
 	readPlist(stream, tmp_message);
-	message = boost::any_cast<T>(tmp_message);
+	message = std::any_cast<T>(tmp_message);
 }
 
 #endif

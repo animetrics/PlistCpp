@@ -1,9 +1,9 @@
 #!/bin/bash
 
-if [[ $1 && $2 ]]
+if [[ $1 ]]
 then
 	cd testing
-	../${2}/${1}/runTests
+	../build/${1}/runTests
 else
-	echo "runTests.sh <config Release/Debug> <Platform Linux, OSX>"
+	echo "runTests.sh <config Release/Debug>"
 fi

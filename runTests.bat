@@ -2,7 +2,7 @@
 if "%1" == "" goto USAGE 
 
 cd testing
-..\Windows\%1\runTests
+..\build\%1\runTests
 cd ..
 
 goto END
