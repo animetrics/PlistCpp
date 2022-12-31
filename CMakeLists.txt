@@ -7,13 +7,6 @@ set (SCRIPT_EXT sh)
 set (MY_BUILD_TYPE ${CMAKE_BUILD_TYPE})
 IF(APPLE)
 	set (ARCH_DIR OSX)
-	# on Mavericks, need to link to libstdc++ directly because libc++ is default
-	# and won't work
-	if(NOT ${CMAKE_SYSTEM_VERSION} VERSION_LESS 13.0)
-		set(EXTRA_CXX_FLAGS "-stdlib=libstdc++")
-		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lstdc++")
-		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lstdc++")
-	endif()
 ELSEIF(MSVC)
 	set (ARCH_DIR Windows)
 	set (SCRIPT_EXT bat)
